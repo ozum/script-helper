@@ -1,0 +1,3 @@
+{
+  "extends": "moe-scripts/tslint-backend.json"
+}

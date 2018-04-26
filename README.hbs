@@ -1,0 +1,235 @@
+<!-- DO NOT EDIT README.md (It will be overridden by README.hbs) -->
+
+# script-helper
+
+Helper for creating and maintaining boilerplates, configurations and script modules for npm projects.
+
+[![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
+
+<!-- START doctoc -->
+<!-- END doctoc -->
+
+# Description
+
+Provides utility class and related methods to create script modules which manipulate npm projects such as create/copy/remove files, directories and data files.
+Also provides `reset()` method which reverses all modifications made by this module.
+
+Script modules help to develop npm modules without config. A very good article explaining this concept is written by Kent C. Dodds which can be found
+[here](https://blog.kentcdodds.com/automation-without-config-412ab5e47229).
+
+With `script-helper`, it is very easy to cerate custom script modules.
+
+Test coverage is 100%, and module is tested with real `npm install` command instead of mocks. This is why initialization of test is slow.
+Since, installed files are same files but in different location, coverage report cannot be calculated from them. To overcome, a few tests are performed twice,
+both on main module and on real installation. Tests on real installation are performed to get real results, and tests on module are performed to get coverage
+report.
+
+# Inspired
+
+Inspired by [kcd-scripts](https://github.com/kentcdodds/kcd-scripts) utility functions, thanks to Kent C. Dodds and all [contributors](https://github.com/kentcdodds/kcd-scripts#contributors).
+
+# Synopsis
+
+## Module Hierarchy
+
+```
+┏ 'project' module: npm project.
+┣━━ 'my-scripts' module: Your custom scripts module to manipulate npm projects. Uses `script-helper` (this module).
+┣━━━━ 'script-helper' module: This module.
+```
+
+## Configuration
+
+Configuration is based on [cosmiconfig](https://www.npmjs.com/package/cosmiconfig). See below for details.
+
+## 'my-scripts' module
+
+In examples below, it is assumed that your scripts module is named and uploaded to npm as `my-scripts`. You can use name you choose.
+
+### my-scripts/package.json
+
+```json
+{
+  "bin": { "my-scripts": "lib/index.js" }
+  "scripts": {
+    "postinstall": "my-scripts init",
+    "preuninstall": "my-scripts reset",
+    "test": "my-scripts test"
+  }
+}
+```
+
+### my-scripts/lib/index.js
+```js
+#!/usr/bin/env node
+
+const { Project, execute } = require("script-helper");
+const project = new Project();
+
+// If called from directly from CLI
+if (require.main === module) {
+  try {
+    execute({ project }); // Optional helper which executes scripts in 'scripts' directory, which is in same directory with this file.
+  } catch (e) {
+    console.error(e);
+    process.exit(1);
+  }
+}
+
+// If you don't want to use execute() helper, you can access exported project via require.
+module.exports = project;
+```
+
+### my-scripts/lib/scripts/init.js
+```js
+function script(project, args) {
+  // Reset previous modifications
+  project.reset();
+
+  // Add some scripts to package.json. (Does not overwrite if target keys are already defined or changed by user.)
+  // You can change other keys by hand.
+  project.package
+    .set("scripts.test", "my-scripts test")
+    .set("scripts.compile", "my-scripts compile");
+
+  // Create a .env file with default content. (Does not overwirte if it is already created or changed by user.)
+  project.writeFile(".env", "PASSWORD=my-super-secret-password");
+
+  // Create a symlink in project which points to a file in your custom module.
+  // project/tsconfig.json -> project/node_modules/my-scripts/lib/config/tsconfig.json
+  project.createSymLink("lib/config/tsconfig.json", "tsconfig.json");
+
+  // Copy a file from your custom module to project.
+  // Copy: project/node_modules/my-scripts/lib/config/changelog.md -> project/CHANGELOG.md
+  project.copyFile("lib/config/changelog.md", "CHANGELOG.md");
+}
+
+// Function to be called must be exported under 'script' key if you use 'execute' helper.
+module.exports = { script };
+```
+
+### my-scripts/lib/scripts/reset.js
+```js
+function script(project) {
+  // Reset all created files, symlinks, changed JSON and YAML entries if they are not changed by user.
+  // All modifications are tracked in a JSON file called 'my-scripts-registry.json'
+  // 'my-scripts' is the name of your module and file name is shaped according the name of your module.
+  project.reset();
+}
+
+module.exports = { script };
+```
+
+### my-scripts/lib/scripts/test.js
+```js
+function script(project) {
+  // Your test related script. Do some testing stuff, execute mocha, jest or spawn something.
+}
+
+module.exports = { script };
+```
+
+### my-scripts/lib/scripts/build.js
+
+```js
+function script(project) {
+  // Your build related script.
+}
+
+module.exports = { script };
+```
+
+and so on...
+
+## npm project module
+
+### package.json
+
+Instead of adding scripts below manually, you can create an init script and add it to `postinstall` (see init example above)
+
+```json
+{
+  scripts: {
+    test: "my-scripts test",
+  }
+}
+```
+
+```
+> npm test
+
+or
+
+> node_modules/.bin/my-scripts test
+```
+
+# Configuration
+
+Your scripts module (i.e. `my-scripts`) has builtin [cosmiconfig](https://www.npmjs.com/package/cosmiconfig) support. If user puts a cosmiconfig compatibale configuration in npm project,
+you can access configration via `project.config()` method in your script functions.
+
+By default you can design your own configuration schema. `script-helper` provides some defaults and related methods, as described below:
+
+|Key|Type|Method|Description|
+|---|---|---|---|
+|`optIn`|`Array.<string>`|`project.isOptedIn()`|Lists opted in options.|
+|`optOut`|`Array.<string>`|`project.isOptedOut()`|Lists opted out options.|
+
+# Highlights
+
+* Tries best for non-destructive modifications.
+* Tracks all modifications in a registry json file.
+* Provides `project.reset()` method to reset all changes made by this module.
+* Changes in JSON and YAML files are tracked by key level using [resettable](https://www.npmjs.com/package/resettable).
+  * User created keys and values would not be deleted/modified if `{ force: true }` ıs not used.
+  * User can further modify data files. They do not interfere with this module's targets.
+  * CAVEAT: [resettable](https://www.npmjs.com/package/resettable) cannot handle all cases, please see it's documentation and always use version control.
+* Changes in non data files are tracked using SHA-1 hash.
+* JSON, YAML and JavaScript files are normalized in memory before comparison to eliminate white-space noise.
+* Provides `execute()` helper function to execute your scripts and handle errors and saving project data files and registry.
+* Provides `project.save()` method for saving registry json file and changes made to data files.
+
+## Notes
+
+* For tracking data files by key level, use `project.readDataFile()` method, which returns [DataObject](#dataobject)
+  * Methods of [DataObject](#dataobject) such as `set()`, `remove()` provides automatic log messages.
+  * You can directly access data using `.data` property.
+  * Tracking still works if you manipulate data from `.data` directly, because modifications are calculated during file save.
+* All data files read with `project.readDataFile()` are saved during project save (`project.save()`).
+  * Do not use `project.writeFile()` for those files.
+* If user modifies file or data created by this library, they are not modified further if not forced with `{ force: true }` option.
+* DO NOT forget `project.save()` after you finish your modifications.
+  * Or use `execute()` helper function, which saves project even after error in your scripts, and handle `process.exit()` as necessary.
+* `reset()` method does not recreate deleted files and directories.
+
+### Disable Tracking
+
+To completely disable tracking, set `track` to `false`in constructor:
+
+```js
+const project = new Project({ track: false });
+```
+
+Tracking may be enabled/disabled per operation:
+
+```
+project.writeFile("some.txt", "content", { track: false });
+```
+
+Please note that disabling tracking does not permit automatically modifying user created files / content.
+`force` option is still needed to overwrite. However non-tracked modifications are treated like user created content.
+
+For example:
+
+```js
+// Assume user.txt is created manually by user beforehand.
+project.deleteFile("user.txt");                               // NOT deleted, because it is created by user.
+project.writeFile("auto.txt", "x");                           // Created and tracked. It is known this file is created by this library.
+project.deleteFile("auto.txt");                               // Deleted, because it is known that file was created by this library.
+project.writeFile("non-tracked.txt", "x", { track: false });  // Created and tracked. It is known this file is created by this library.
+project.deleteFile("non-tracked.txt");                        // NOT deleted, because it is not tracked, and it is unknown created by whom.
+project.deleteFile("non-tracked.txt", { force: true });       // Deleted, because `force` is in effect.
+```
+
+# API
+{{>main~}}
