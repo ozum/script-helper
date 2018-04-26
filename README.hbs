@@ -50,7 +50,7 @@ In examples below, it is assumed that your scripts module is named and uploaded 
 
 ```json
 {
-  "bin": { "my-scripts": "lib/index.js" }
+  "bin": { "my-scripts": "lib/index.js" },
   "scripts": {
     "postinstall": "my-scripts init",
     "preuninstall": "my-scripts reset",
@@ -149,8 +149,8 @@ Instead of adding scripts below manually, you can create an init script and add 
 
 ```json
 {
-  scripts: {
-    test: "my-scripts test",
+  "scripts": {
+    "test": "my-scripts test",
   }
 }
 ```
