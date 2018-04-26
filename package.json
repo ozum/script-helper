@@ -2,6 +2,7 @@
   "name": "script-helper",
   "version": "0.0.1",
   "description": "Helper for creating and maintaining boilerplates, configurations and script modules for npm projects",
+  "keywords": ["boilerplate", "scripts", "scripts module"],
   "main": "lib/index",
   "types": "lib/index",
   "files": ["lib", "bin", "@types"],
