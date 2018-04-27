@@ -33,7 +33,7 @@ function getScriptsPath() {
 export function execute({ projectOptions, project = new Project(projectOptions) }: { projectOptions?: object; project?: Project } = {}) {
   const [executor, ignoredBin, script, ...args] = process.argv;
   const scriptPath = path.join(getScriptsPath(), `${script}`);
-  const exists = fs.existsSync(`${scriptPath}.js`) || fs.existsSync(scriptPath);
+  const exists = fs.existsSync(`${scriptPath}.js`) || fs.existsSync(`${scriptPath}.ts`) || fs.existsSync(scriptPath);
 
   if (!script || !exists) {
     if (script) {

@@ -89,6 +89,7 @@ Helper for creating and maintaining boilerplates, configurations and script modu
     - [dataObject.reset() ⇒ <code>Array.&lt;Operation&gt;</code>](#dataobjectreset-%E2%87%92-codearrayltoperationgtcode)
   - [execute([project], [projectOptions]) ⇒ <code>void</code>](#executeproject-projectoptions-%E2%87%92-codevoidcode)
   - [replaceArgumentName(args, names, newName) ⇒ <code>Array</code>](#replaceargumentnameargs-names-newname-%E2%87%92-codearraycode)
+  - [getFromHereFunctions(baseDir) ⇒ <code>Result</code>](#getfromherefunctionsbasedir-%E2%87%92-coderesultcode)
   - [Format : <code>&quot;json&quot;</code> \| <code>&quot;yaml&quot;</code>](#format--codequotjsonquotcode-%5C-codequotyamlquotcode)
   - [FileOptions : <code>Object</code>](#fileoptions--codeobjectcode)
   - [Registry : <code>Object</code>](#registry--codeobjectcode)
@@ -335,6 +336,8 @@ Also provides <code>reset()</code> method which reverses all modifications made 
 <dd><p>Executes script based on script name from CLI arguments (process.argv).</p></dd>
 <dt><a href="#replaceArgumentName">replaceArgumentName(args, names, newName)</a> ⇒ <code>Array</code></dt>
 <dd><p>Returns a new array, after replacing output destination argument name with a new name. Does not mutate original array.</p></dd>
+<dt><a href="#getFromHereFunctions">getFromHereFunctions(baseDir)</a> ⇒ <code><a href="#getFromHereFunction..Result">Result</a></code></dt>
+<dd><p>Higher order function which returns functions which calculates paths related to base path given.</p></dd>
 </dl>
 
 ## Typedefs
@@ -1293,6 +1296,26 @@ Or in package.json
 ```js
 const arguments = ["--a", "--b"];
 replaceArgumentName(arguments, ["--a"], "--c"); // -> ["--c", "--b"]
+```
+<a name="getFromHereFunctions"></a>
+
+## getFromHereFunctions(baseDir) ⇒ [<code>Result</code>](#getFromHereFunction..Result)
+<p>Higher order function which returns functions which calculates paths related to base path given.</p>
+
+**Kind**: global function  
+**Returns**: [<code>Result</code>](#getFromHereFunction..Result) - <ul>
+<li>Functions which calculates paths.</li>
+</ul>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| baseDir | <code>string</code> | <p>Base dir to be used in generated functions.</p> |
+
+**Example**  
+```js
+const { here, hereRelative } = getFromHereFunction(__dirname);
+const absPath = here("a.txt"); // /some/path/mydir/a.txt
+const relativePath = hereRelative("b.txt"); // ./b.txt
 ```
 <a name="Format"></a>
 
