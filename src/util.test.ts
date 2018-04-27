@@ -1,4 +1,4 @@
-import { replaceArgumentName, getFromHereFunctions } from "./util";
+import { replaceArgumentName, getFromHereFunctions } from "./index";
 import path from "path";
 
 describe("replaceArgumentName()", () => {
@@ -11,7 +11,7 @@ describe("replaceArgumentName()", () => {
   });
 });
 
-describe("fromHereFunctions()", () => {
+describe("getfromHereFunctions()", () => {
   const { here, hereRelative } = getFromHereFunctions(__dirname);
 
   it("should return absolute path for path relative to base path", () => {
