@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "CLI for common scripts for JavaScript and TypeScript projects",
   "engines": { "node": ">= 9", "npm": ">= 5" },
-  "main": "lib/index",
+  "main": "src/index",
   "bin": { "scripts-module": "lib/index.js" },
   "author": "Özüm Eldoğan",
   "license": "MIT",

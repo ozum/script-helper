@@ -1,1 +1,1 @@
-module.exports = require("scripts-module");
+console.log("Hello from project-module-babel");

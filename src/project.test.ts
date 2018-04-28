@@ -35,7 +35,7 @@ afterAll(async () => {
 });
 
 describe("project", () => {
-  it("should throw for wron project", () => {
+  it("should throw for wrong project", () => {
     expect(() => new Project()).toThrow("Cannot find module root");
   });
 
@@ -179,7 +179,7 @@ describe("project", () => {
 
   it("should getConcurrentlyArgs()", () => {
     expect(projects.ts.getConcurrentlyArgs({ build: "echo building now && npx -p codecov" })).toEqual([
-      "-kill-others-on-fail",
+      "--kill-others-on-fail",
       "--prefix",
       "[{name}]",
       "--names",

@@ -264,7 +264,7 @@ export default class Project extends ResettableFile {
 
     // prettier-ignore
     return [
-      killOthers ? "-kill-others-on-fail" : "",
+      killOthers ? "--kill-others-on-fail" : "",
       "--prefix", "[{name}]",
       "--names", Object.keys(fullScripts).join(","),
       "--prefix-colors", prefixColors,
