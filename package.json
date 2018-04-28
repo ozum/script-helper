@@ -2,18 +2,10 @@
   "name": "script-helper",
   "version": "0.2.1",
   "description": "Helper for creating and maintaining boilerplates, configurations and script modules for npm projects",
-  "keywords": [
-    "boilerplate",
-    "scripts",
-    "scripts module"
-  ],
+  "keywords": ["boilerplate", "scripts", "scripts module"],
   "main": "lib/index",
   "types": "lib/index",
-  "files": [
-    "lib",
-    "bin",
-    "@types"
-  ],
+  "files": ["lib", "bin", "@types"],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ozum/script-helper.git"
@@ -36,7 +28,8 @@
     "test:update": "moe-scripts test --updateSnapshot",
     "validate": "moe-scripts validate",
     "watch": "concurrently 'npm run build -- --watch' 'npm run test -- --watch' | awk '{gsub(/\\033c/,\"\") system(\"\")}1'",
-    "parentClass:get": "svn export https://github.com/ozum/resettable-file/trunk/src src/resettable-file && sed -i '' $'s/@classdesc/@classdesc\\\n * @private/' src/resettable-file/resettable-file.ts",
+    "parentClass:get":
+      "npm run parentClass:remove && svn export https://github.com/ozum/resettable-file/trunk/src src/resettable-file && sed -i '' $'s/@classdesc/@classdesc\\\n * @private/' src/resettable-file/resettable-file.ts",
     "parentClass:remove": "rm -rf src/resettable-file"
   },
   "author": {

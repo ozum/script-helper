@@ -65,6 +65,7 @@ In examples below, it is assumed that your scripts module is named and uploaded 
 
 const { Project, execute } = require("script-helper");
 const project = new Project();
+module.exports = project; // If you don't want to use execute() helper, you can access exported project via require.
 
 // If called from directly from CLI
 if (require.main === module) {
@@ -75,9 +76,6 @@ if (require.main === module) {
     process.exit(1);
   }
 }
-
-// If you don't want to use execute() helper, you can access exported project via require.
-module.exports = project;
 ```
 
 ### my-scripts/lib/scripts/init.js
