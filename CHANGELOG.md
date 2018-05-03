@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="0.3.0"></a>
+
+# [0.3.0](https://github.com/ozum/script-helper/compare/v0.2.3...v0.3.0) (2018-05-03)
+
+### Bug Fixes
+
+* fix doc ([58a6aa1](https://github.com/ozum/script-helper/commit/58a6aa1))
+* update moe-scripts ([4fcd9fc](https://github.com/ozum/script-helper/commit/4fcd9fc))
+
+### Features
+
+* add ScriptKit class ([2be0ad2](https://github.com/ozum/script-helper/commit/2be0ad2))
+
 <a name="0.2.3"></a>
 
 ## [0.2.3](https://github.com/ozum/script-helper/compare/v0.2.2...v0.2.3) (2018-04-28)
