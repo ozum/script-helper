@@ -6,9 +6,7 @@ import * as os from "os";
 import VError from "verror";
 import { Project } from "../index";
 
-const [exec] = [promisify(childProcess.exec)];
-let isInstalled = false;
-let installError: Error;
+const [exec, setTimeoutPromise] = [promisify(childProcess.exec), promisify(setTimeout)];
 
 // const BASEPATH = path.normalize(`${__dirname}/../../../script-helper-test`);
 const BASEPATH = path.normalize(`${__dirname}/../../test-temp`);
@@ -91,7 +89,12 @@ export function getFileName(name: ProjectName, extension = ""): [string, string]
 
 export function getProject(name: ProjectName, projectOptions?: object): Project {
   const projectPath = paths.projects[name];
-  return new Project(Object.assign({ cwd: projectPath.install, moduleRoot: projectPath.scripts }, projectOptions || {}));
+  return new Project(
+    Object.assign(
+      { cwd: projectPath.install, moduleRoot: projectPath.scripts, filesDir: path.join(projectPath.scripts, "lib") },
+      projectOptions || {},
+    ),
+  );
 }
 
 export function getInstalledProject(name: ProjectName): Project {
@@ -99,24 +102,22 @@ export function getInstalledProject(name: ProjectName): Project {
   return require(path.join(paths.projects[name].scripts, "/lib/index"));
 }
 
-export async function installProjects({ justUpdate = false }) {
+export async function installProjects({ justUpdate = false, build = true }): Promise<any> {
   // Cache error. Jest, if beforeAll() method throws, calls again beforeAll() method until it succeeds for every test case. However result of this expensive function does not change.
-  if (installError) {
-    throw installError;
-  }
-  if (!isInstalled) {
-    isInstalled = true;
-    const installPromise = justUpdate
-      ? Promise.all([updateProject("ts"), updateProject("babel")])
-      : Promise.all([exec(`npm run build`), emptyDir(paths.base)])
-          .then(() => Promise.all([paths.scriptsSource, paths.source].map(src => packModule(src, paths.base))))
-          .then(() => Promise.all([install("ts"), install("babel")]));
 
-    return installPromise.catch(e => {
-      installError = e;
-      throw e;
-    });
+  if (!justUpdate || build) {
+    try {
+      await exec(`npm run build`);
+    } catch (e) {
+      throw new Error("Cannot build.");
+    }
   }
+
+  return justUpdate
+    ? Promise.all([updateProject("ts"), updateProject("babel")])
+    : emptyDir(paths.base)
+        .then(() => Promise.all([paths.scriptsSource, paths.source].map(src => packModule(src, paths.base))))
+        .then(() => Promise.all([install("ts"), install("babel")]));
 }
 
 export async function clear() {

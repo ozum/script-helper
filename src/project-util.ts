@@ -1,8 +1,9 @@
-import * as fs from "fs-extra";
-import * as path from "path";
+import fs from "fs-extra";
+import path from "path";
 import { VError } from "verror";
 import readPkgUp from "read-pkg-up";
 import { Format, Data, Path } from "resettable-file";
+import Project from "./project";
 
 const npmLifecycleEventUp: { [key: string]: number } = {
   preinstall: 2,
@@ -105,4 +106,17 @@ export function getPackageAndDir({ useStack = true, level = 0, cwd }: { useStack
   } catch (e) {
     throw new VError(e, "Cannot find package.json and project directory.");
   }
+}
+
+/* istanbul ignore next */
+export function listScripts(scriptNames: Array<string>) {
+  const [executor, ignoredBin, script, ...args] = process.argv;
+  // `glob.sync` returns paths with unix style path separators even on Windows.
+  // So we normalize it before attempting to strip out the scripts path.
+  const scriptList = scriptNames.join("\n  ");
+  let message = `Usage: ${path.basename(ignoredBin)} [script] [--flags]\n\n`;
+  message += `Available Scripts:\n  ${scriptList}\n\n`;
+  message += `Options:\n`;
+  message += `  All options depend on the script and args you pass will be forwarded to the respective tool that's being run under the hood.`;
+  console.log(`\n${message.trim()}\n`);
 }

@@ -11,6 +11,8 @@
     "postinstall": "scripts-module post-install --post_ok"
   },
   "dependencies": {
-    "script-helper": "file:../script-helper.tgz"
+    "script-helper": "file:../script-helper.tgz",
+    "lodash.debounce": "^4.0.8",
+    "concurrently": "^3.5.1"
   }
 }

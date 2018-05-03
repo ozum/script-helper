@@ -1,4 +1,4 @@
-import { replaceArgumentName, getFromHereFunctions } from "./index";
+import { replaceArgumentName } from "./index";
 import path from "path";
 
 describe("replaceArgumentName()", () => {
@@ -8,17 +8,5 @@ describe("replaceArgumentName()", () => {
 
   it("should return arguments as it is if argument name does not exist", () => {
     expect(replaceArgumentName(["--a", "--b"], ["--x"], "--c")).toEqual(["--a", "--b"]);
-  });
-});
-
-describe("getfromHereFunctions()", () => {
-  const { here, hereRelative } = getFromHereFunctions(__dirname);
-
-  it("should return absolute path for path relative to base path", () => {
-    expect(here("../a")).toBe(path.join(__dirname, "../a"));
-  });
-
-  it("should return relative path from cwd for path relative to base path", () => {
-    expect(hereRelative("a")).toBe("./src/a");
   });
 });

@@ -31,6 +31,7 @@ Helper for creating and maintaining boilerplates, configurations and script modu
 * [API](#api)
   * [Classes](#classes)
   * [Functions](#functions)
+  * [Typedefs](#typedefs)
   * [Project](#project)
     * [new Project([options])](#new-projectoptions)
     * [project.name : <code>string</code>](#projectname--codestringcode)
@@ -40,19 +41,31 @@ Helper for creating and maintaining boilerplates, configurations and script modu
     * [project.package : <code>DataObject</code>](#projectpackage--codedataobjectcode)
     * [project.isCompiled : <code>boolean</code>](#projectiscompiled--codebooleancode)
     * [project.isTypeScript : <code>boolean</code>](#projectistypescript--codebooleancode)
+    * [project.availableScripts : <code>Array.&lt;string&gt;</code>](#projectavailablescripts--codearrayltstringgtcode)
+    * [project.scriptsDir : <code>string</code>](#projectscriptsdir--codestringcode)
+    * [project.configDir : <code>string</code>](#projectconfigdir--codestringcode)
     * [project.resolveModule(name) ⇒ <code>string</code>](#projectresolvemodulename-%E2%87%92-codestringcode)
     * [project.resolveScriptsBin([options], [cwd]) ⇒ <code>string</code> \| <code>undefined</code>](#projectresolvescriptsbinoptions-cwd-%E2%87%92-codestringcode-%5C-codeundefinedcode)
+    * [project.bin(executable) ⇒ <code>string</code>](#projectbinexecutable-%E2%87%92-codestringcode)
     * [project.resolveBin(modName, [options], [executable], [cwd]) ⇒ <code>string</code>](#projectresolvebinmodname-options-executable-cwd-%E2%87%92-codestringcode)
     * [project.fromModuleRoot(...part) ⇒ <code>string</code>](#projectfrommodulerootpart-%E2%87%92-codestringcode)
+    * [project.fromConfigDir(...part) ⇒ <code>string</code>](#projectfromconfigdirpart-%E2%87%92-codestringcode)
+    * [project.fromScriptsDir(...part) ⇒ <code>string</code>](#projectfromscriptsdirpart-%E2%87%92-codestringcode)
     * [project.hasAnyDep(deps, [t], [f]) ⇒ <code>\*</code>](#projecthasanydepdeps-t-f-%E2%87%92-code%5Ccode)
     * [project.envIsSet(name) ⇒ <code>boolean</code>](#projectenvissetname-%E2%87%92-codebooleancode)
     * [project.parseEnv(name, defaultValue) ⇒ <code>\*</code>](#projectparseenvname-defaultvalue-%E2%87%92-code%5Ccode)
+    * [project.executeFromCLISync(exit) ⇒ <code>ScriptResult</code> \| <code>void</code>](#projectexecutefromclisyncexit-%E2%87%92-codescriptresultcode-%5C-codevoidcode)
+    * [project.executeScriptFileSync(scriptFile, [args]) ⇒ <code>ScriptResult</code> \| <code>Array.&lt;ScriptResult&gt;</code>](#projectexecutescriptfilesyncscriptfile-args-%E2%87%92-codescriptresultcode-%5C-codearrayltscriptresultgtcode)
+    * [project.hasScriptSync(scriptFile) ⇒ <code>string</code> \| <code>undefined</code>](#projecthasscriptsyncscriptfile-%E2%87%92-codestringcode-%5C-codeundefinedcode)
+    * [project.executeSync(executable) ⇒ <code>ScriptResult</code>](#projectexecutesyncexecutable-%E2%87%92-codescriptresultcode)
     * [project.getConcurrentlyArgs(scripts, [options], [killOthers]) ⇒ <code>Array.&lt;string&gt;</code>](#projectgetconcurrentlyargsscripts-options-killothers-%E2%87%92-codearrayltstringgtcode)
     * [project.isOptedOut(key, [t], [f]) ⇒ <code>\*</code>](#projectisoptedoutkey-t-f-%E2%87%92-code%5Ccode)
     * [project.isOptedIn(key, [t], [f]) ⇒ <code>\*</code>](#projectisoptedinkey-t-f-%E2%87%92-code%5Ccode)
-  * [execute([project], [projectOptions]) ⇒ <code>void</code>](#executeproject-projectoptions-%E2%87%92-codevoidcode)
   * [replaceArgumentName(args, names, newName) ⇒ <code>Array</code>](#replaceargumentnameargs-names-newname-%E2%87%92-codearraycode)
-  * [getFromHereFunctions(baseDir) ⇒ <code>Result</code>](#getfromherefunctionsbasedir-%E2%87%92-coderesultcode)
+  * [Options : <code>Object</code>](#options--codeobjectcode)
+  * [Executable : <code>string</code> \| <code>Array.&lt;(string\|Array.&lt;string&gt;\|SpawnOptions)&gt;</code>](#executable--codestringcode-%5C-codearrayltstring%5Carrayltstringgt%5Cspawnoptionsgtcode)
+  * [ScriptResult : <code>Object</code>](#scriptresult--codeobjectcode)
+  * [Script : <code>function</code>](#script--codefunctioncode)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -291,12 +304,22 @@ Also provides <code>reset()</code> method which reverses all modifications made 
 ## Functions
 
 <dl>
-<dt><a href="#execute">execute([project], [projectOptions])</a> ⇒ <code>void</code></dt>
-<dd><p>Executes script based on script name from CLI arguments (process.argv).</p></dd>
 <dt><a href="#replaceArgumentName">replaceArgumentName(args, names, newName)</a> ⇒ <code>Array</code></dt>
 <dd><p>Returns a new array, after replacing output destination argument name with a new name. Does not mutate original array.</p></dd>
-<dt><a href="#getFromHereFunctions">getFromHereFunctions(baseDir)</a> ⇒ <code><a href="#getFromHereFunction..Result">Result</a></code></dt>
-<dd><p>Higher order function which returns functions which calculates paths related to base path given.</p></dd>
+</dl>
+
+## Typedefs
+
+<dl>
+<dt><a href="#Options">Options</a> : <code>Object</code></dt>
+<dd><p>to provide spawn method.</p></dd>
+<dt><a href="#Executable">Executable</a> : <code>string</code> | <code>Array.&lt;(string|Array.&lt;string&gt;|SpawnOptions)&gt;</code></dt>
+<dd><p>Type for holding executable. It may be string to store executable name without arguments. For executable
+with arguments or options it is a tuple <code>[bin-name, [arg1, arg2, arg3], spawn-options]</code></p></dd>
+<dt><a href="#ScriptResult">ScriptResult</a> : <code>Object</code></dt>
+<dd><p>Type for returned value from CLI command.</p></dd>
+<dt><a href="#Script">Script</a> : <code>function</code></dt>
+<dd><p>Type for script function.</p></dd>
 </dl>
 
 <a name="Project"></a>
@@ -317,13 +340,23 @@ Also provides <code>reset()</code> method which reverses all modifications made 
   * [.package](#Project+package) : <code>DataObject</code>
   * [.isCompiled](#Project+isCompiled) : <code>boolean</code>
   * [.isTypeScript](#Project+isTypeScript) : <code>boolean</code>
+  * [.availableScripts](#Project+availableScripts) : <code>Array.&lt;string&gt;</code>
+  * [.scriptsDir](#Project+scriptsDir) : <code>string</code>
+  * [.configDir](#Project+configDir) : <code>string</code>
   * [.resolveModule(name)](#Project+resolveModule) ⇒ <code>string</code>
   * [.resolveScriptsBin([options], [cwd])](#Project+resolveScriptsBin) ⇒ <code>string</code> \| <code>undefined</code>
+  * [.bin(executable)](#Project+bin) ⇒ <code>string</code>
   * [.resolveBin(modName, [options], [executable], [cwd])](#Project+resolveBin) ⇒ <code>string</code>
   * [.fromModuleRoot(...part)](#Project+fromModuleRoot) ⇒ <code>string</code>
+  * [.fromConfigDir(...part)](#Project+fromConfigDir) ⇒ <code>string</code>
+  * [.fromScriptsDir(...part)](#Project+fromScriptsDir) ⇒ <code>string</code>
   * [.hasAnyDep(deps, [t], [f])](#Project+hasAnyDep) ⇒ <code>\*</code>
   * [.envIsSet(name)](#Project+envIsSet) ⇒ <code>boolean</code>
   * [.parseEnv(name, defaultValue)](#Project+parseEnv) ⇒ <code>\*</code>
+  * [.executeFromCLISync(exit)](#Project+executeFromCLISync) ⇒ [<code>ScriptResult</code>](#ScriptResult) \| <code>void</code>
+  * [.executeScriptFileSync(scriptFile, [args])](#Project+executeScriptFileSync) ⇒ [<code>ScriptResult</code>](#ScriptResult) \| [<code>Array.&lt;ScriptResult&gt;</code>](#ScriptResult)
+  * [.hasScriptSync(scriptFile)](#Project+hasScriptSync) ⇒ <code>string</code> \| <code>undefined</code>
+  * [.executeSync(executable)](#Project+executeSync) ⇒ [<code>ScriptResult</code>](#ScriptResult)
   * [.getConcurrentlyArgs(scripts, [options], [killOthers])](#Project+getConcurrentlyArgs) ⇒ <code>Array.&lt;string&gt;</code>
   * [.isOptedOut(key, [t], [f])](#Project+isOptedOut) ⇒ <code>\*</code>
   * [.isOptedIn(key, [t], [f])](#Project+isOptedIn) ⇒ <code>\*</code>
@@ -332,14 +365,16 @@ Also provides <code>reset()</code> method which reverses all modifications made 
 
 ### new Project([options])
 
-| Param                     | Type                              | Default                                     | Description                                                                                                                               |
-| ------------------------- | --------------------------------- | ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| [options]                 | <code>Object</code>               |                                             | <p>Options</p>                                                                                                                            |
-| [options.track]           | <code>boolean</code>              |                                             | <p>Sets default tracking option for methods.</p>                                                                                          |
-| [options.sortPackageKeys] | <code>Array.&lt;string&gt;</code> | <code>[&quot;scripts&quot;]</code>          | <p>Default keys to be sorted in package.json file.</p>                                                                                    |
-| [options.logLevel]        | <code>string</code>               | <code>&quot;\&quot;info\&quot;&quot;</code> | <p>Sets log level. (&quot;error&quot;, &quot;warn&quot;, &quot;info&quot;, &quot;debug&quot;, &quot;verbose&quot;, &quot;silly&quot;)</p> |
-| [options.cwd]             | <code>string</code>               | <code>&quot;[project root]&quot;</code>     | <p>[<code>Special</code>] Working directory of project root. (Only for special purposes, normally not necessary.)</p>                     |
-| [options.moduleRoot]      | <code>string</code>               | <code>&quot;[module root]&quot;</code>      | <p>[<code>Special</code>] Root of the module using this library. (Only for special purposes, normally not necessary.)</p>                 |
+| Param                     | Type                              | Default                                 | Description                                                                                                                                                                                 |
+| ------------------------- | --------------------------------- | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [options]                 | <code>Object</code>               |                                         | <p>Options</p>                                                                                                                                                                              |
+| [options.filesDir]        | <code>boolean</code>              | <code>require.main.filename</code>      | <p>Directory of <code>config</code> and <code>script</code> directories. Default value assumes file called from CLI resides same dir with <code>scripts</code> and <code>config</code>.</p> |
+| [options.track]           | <code>boolean</code>              |                                         | <p>Sets default tracking option for methods.</p>                                                                                                                                            |
+| [options.sortPackageKeys] | <code>Array.&lt;string&gt;</code> | <code>[&quot;scripts&quot;]</code>      | <p>Default keys to be sorted in package.json file.</p>                                                                                                                                      |
+| [options.logLevel]        | <code>LogLevel</code>             | <code>&quot;info&quot;</code>           | <p>Sets log level. (&quot;error&quot;, &quot;warn&quot;, &quot;info&quot;, &quot;debug&quot;, &quot;verbose&quot;, &quot;silly&quot;)</p>                                                   |
+| [options.cwd]             | <code>string</code>               | <code>&quot;[project root]&quot;</code> | <p>[<code>Special</code>] Working directory of project root. (Only for special purposes, normally not necessary.)</p>                                                                       |
+| [options.moduleRoot]      | <code>string</code>               | <code>&quot;[module root]&quot;</code>  | <p>[<code>Special</code>] Root of the module using this library. (Only for special purposes, normally not necessary.)</p>                                                                   |
+| [options.debug]           | <code>boolean</code>              | <code>false</code>                      | <p>Turns on debug mode.</p>                                                                                                                                                                 |
 
 <a name="Project+name"></a>
 
@@ -397,6 +432,30 @@ Also provides <code>reset()</code> method which reverses all modifications made 
 
 **Kind**: instance property of [<code>Project</code>](#Project)  
 **Read only**: true  
+<a name="Project+availableScripts"></a>
+
+### project.availableScripts : <code>Array.&lt;string&gt;</code>
+
+<p>Lists of available scripts in scripts folder.</p>
+
+**Kind**: instance property of [<code>Project</code>](#Project)  
+**Read only**: true  
+<a name="Project+scriptsDir"></a>
+
+### project.scriptsDir : <code>string</code>
+
+<p>Path of the scripts dir.</p>
+
+**Kind**: instance property of [<code>Project</code>](#Project)  
+**Read only**: true  
+<a name="Project+configDir"></a>
+
+### project.configDir : <code>string</code>
+
+<p>Path of the config dir.</p>
+
+**Kind**: instance property of [<code>Project</code>](#Project)  
+**Read only**: true  
 <a name="Project+resolveModule"></a>
 
 ### project.resolveModule(name) ⇒ <code>string</code>
@@ -442,6 +501,22 @@ project.resolveModule("fs-extra"); // /path/to/project-module/node_modules/fs-ex
 project.resolveScriptsBin(); // my-scripts (executable of this libraray)
 ```
 
+<a name="Project+bin"></a>
+
+### project.bin(executable) ⇒ <code>string</code>
+
+<p>Returns relative path to cwd of given executable located in project's <code>node_modules/.bin</code>.</p>
+
+**Kind**: instance method of [<code>Project</code>](#Project)  
+**Returns**: <code>string</code> - <ul>
+
+<li>Path of the executable in <code>node_modules/.bim</code></li>
+</ul>  
+
+| Param      | Type                | Description                   |
+| ---------- | ------------------- | ----------------------------- |
+| executable | <code>string</code> | <p>Name of the executable</p> |
+
 <a name="Project+resolveBin"></a>
 
 ### project.resolveBin(modName, [options], [executable], [cwd]) ⇒ <code>string</code>
@@ -481,6 +556,38 @@ project.resolveScriptsBin(); // my-scripts (executable of this libraray)
 | Param   | Type                              | Description                                            |
 | ------- | --------------------------------- | ------------------------------------------------------ |
 | ...part | <code>Array.&lt;string&gt;</code> | <p>Path parts to get path relative to module root.</p> |
+
+<a name="Project+fromConfigDir"></a>
+
+### project.fromConfigDir(...part) ⇒ <code>string</code>
+
+<p>Returns given path added to path of config directory. Path may be given as a single string or in multiple parts.</p>
+
+**Kind**: instance method of [<code>Project</code>](#Project)  
+**Returns**: <code>string</code> - <ul>
+
+<li>Path in config directory.</li>
+</ul>  
+
+| Param   | Type                | Description                         |
+| ------- | ------------------- | ----------------------------------- |
+| ...part | <code>string</code> | <p>Path relative to config dir.</p> |
+
+<a name="Project+fromScriptsDir"></a>
+
+### project.fromScriptsDir(...part) ⇒ <code>string</code>
+
+<p>Returns given path added to path of scripts directory. Path may be given as a single string or in multiple parts.</p>
+
+**Kind**: instance method of [<code>Project</code>](#Project)  
+**Returns**: <code>string</code> - <ul>
+
+<li>Path in config directory.</li>
+</ul>  
+
+| Param   | Type                | Description                          |
+| ------- | ------------------- | ------------------------------------ |
+| ...part | <code>string</code> | <p>Path relative to scripts dir.</p> |
 
 <a name="Project+hasAnyDep"></a>
 
@@ -532,6 +639,107 @@ project.resolveScriptsBin(); // my-scripts (executable of this libraray)
 | ------------ | ------------------- | ----------------------------------------------------------------------------- |
 | name         | <code>string</code> | <p>Name of the environment variable</p>                                       |
 | defaultValue | <code>\*</code>     | <p>Default value to return if no environment variable is set or is empty.</p> |
+
+<a name="Project+executeFromCLISync"></a>
+
+### project.executeFromCLISync(exit) ⇒ [<code>ScriptResult</code>](#ScriptResult) \| <code>void</code>
+
+<p>Executes script based on script name from CLI (process.argv). If <code>exit</code> is true, also exist
+from process with success (0) or failure code (1).</p>
+
+**Kind**: instance method of [<code>Project</code>](#Project)  
+**Returns**: [<code>ScriptResult</code>](#ScriptResult) \| <code>void</code> - <ul>
+
+<li>Result of script</li>
+</ul>  
+**Throws**:
+
+* <code>VError</code> <ul>
+  <li>Throws error if script throws error.</li>
+  </ul>
+
+| Param | Type                 | Description                          |
+| ----- | -------------------- | ------------------------------------ |
+| exit  | <code>boolean</code> | <p>Whether to exit from process.</p> |
+
+**Example**
+
+```js
+// in my-scripts/lib/index.js
+project.executeFromCLI();
+
+// in package.json
+{ "scripts": { "test": "my-scripts test" } }
+
+// on CLI
+> npm run test
+> node_modules/.bin/my-scripts test
+```
+
+<a name="Project+executeScriptFileSync"></a>
+
+### project.executeScriptFileSync(scriptFile, [args]) ⇒ [<code>ScriptResult</code>](#ScriptResult) \| [<code>Array.&lt;ScriptResult&gt;</code>](#ScriptResult)
+
+<p>Executes given script file's exported <code>script</code> function. Script file should be given relative to scripts directory.</p>
+
+**Kind**: instance method of [<code>Project</code>](#Project)  
+**Returns**: [<code>ScriptResult</code>](#ScriptResult) \| [<code>Array.&lt;ScriptResult&gt;</code>](#ScriptResult) - <ul>
+
+<li>Result of script function. (If more than one command executed, array of results)</li>
+</ul>  
+**Throws**:
+
+* <code>VError</code> <ul>
+  <li>Throws if given file does not export a function in script property.</li>
+  </ul>
+
+| Param      | Type                              | Default         | Description                                         |
+| ---------- | --------------------------------- | --------------- | --------------------------------------------------- |
+| scriptFile | <code>string</code>               |                 | <p>Script file to execute in scripts directory.</p> |
+| [args]     | <code>Array.&lt;string&gt;</code> | <code>[]</code> | <p>Arguments to pass script function.</p>           |
+
+**Example**
+
+```js
+const result = executeScriptFileSync("build"); // Executes my-scripts/lib/scripts/build
+```
+
+<a name="Project+hasScriptSync"></a>
+
+### project.hasScriptSync(scriptFile) ⇒ <code>string</code> \| <code>undefined</code>
+
+<p>Checks whether given script exists in scripts directory. Script search method is as below:</p>
+<ol>
+<li>If given path found (dir or file), returns it.</li>
+<li>If file name has no extension, looks a file name with extension in order of <code>ts</code>, <code>js</code>.</li>
+<li>If file name with an extension is found, returns full path of filename including extension.</li>
+</ol>
+
+**Kind**: instance method of [<code>Project</code>](#Project)  
+**Returns**: <code>string</code> \| <code>undefined</code> - <ul>
+
+<li>Full path (with extension if it has one). Undefined if not found.</li>
+</ul>  
+
+| Param      | Type                | Description                            |
+| ---------- | ------------------- | -------------------------------------- |
+| scriptFile | <code>string</code> | <p>Module file to check existence.</p> |
+
+<a name="Project+executeSync"></a>
+
+### project.executeSync(executable) ⇒ [<code>ScriptResult</code>](#ScriptResult)
+
+<p>Executes given binary using <code>spawn.sync</code> with given arguments and return results.</p>
+
+**Kind**: instance method of [<code>Project</code>](#Project)  
+**Returns**: [<code>ScriptResult</code>](#ScriptResult) - <ul>
+
+<li>Result of the executable.</li>
+</ul>  
+
+| Param      | Type                                   | Description        |
+| ---------- | -------------------------------------- | ------------------ |
+| executable | [<code>Executable</code>](#Executable) | <p>Executable.</p> |
 
 <a name="Project+getConcurrentlyArgs"></a>
 
@@ -587,35 +795,6 @@ project.resolveScriptsBin(); // my-scripts (executable of this libraray)
 | [t]   | <code>\*</code>     | <code>true</code>  | <p>Value to return if it is opted in.</p>     |
 | [f]   | <code>\*</code>     | <code>false</code> | <p>Value to return if it is not opted in.</p> |
 
-<a name="execute"></a>
-
-## execute([project], [projectOptions]) ⇒ <code>void</code>
-
-<p>Executes script based on script name from CLI arguments (process.argv).</p>
-
-**Kind**: global function
-
-| Param                            | Type                              | Description                                                                                                                               |
-| -------------------------------- | --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| [project]                        | [<code>Project</code>](#Project)  | <p>[Project](#Project) object to be pass executed functions.</p>                                                                          |
-| [projectOptions]                 | <code>Object</code>               | <p>If no project is provided, options to be used while creating a new [Project](#Project) object</p>                                      |
-| [projectOptions.track]           | <code>boolean</code>              | <p>Sets default tracking option for methods.</p>                                                                                          |
-| [projectOptions.sortPackageKeys] | <code>Array.&lt;string&gt;</code> | <p>Default keys to be sorted in package.json file.</p>                                                                                    |
-| [projectOptions.logLevel]        | <code>string</code>               | <p>Sets log level. (&quot;error&quot;, &quot;warn&quot;, &quot;info&quot;, &quot;debug&quot;, &quot;verbose&quot;, &quot;silly&quot;)</p> |
-| [projectOptions.cwd]             | <code>string</code>               | <p>[<code>Special</code>] Working directory of project root. (Only for special purposes, normally not necessary.)</p>                     |
-| [projectOptions.moduleRoot]      | <code>string</code>               | <p>[<code>Special</code>] Root of the module using this library. (Only for special purposes, normally not necessary.)</p>                 |
-
-**Example**
-
-```js
-> node_modules/.bin/my-scripts test
-
-Or in package.json
-{ "scripts": { "test": "my-scripts test" } }
-
-> npm run test
-```
-
 <a name="replaceArgumentName"></a>
 
 ## replaceArgumentName(args, names, newName) ⇒ <code>Array</code>
@@ -641,26 +820,60 @@ const arguments = ["--a", "--b"];
 replaceArgumentName(arguments, ["--a"], "--c"); // -> ["--c", "--b"]
 ```
 
-<a name="getFromHereFunctions"></a>
+<a name="Options"></a>
 
-## getFromHereFunctions(baseDir) ⇒ [<code>Result</code>](#getFromHereFunction..Result)
+## Options : <code>Object</code>
 
-<p>Higher order function which returns functions which calculates paths related to base path given.</p>
+<p>to provide spawn method.</p>
 
-**Kind**: global function  
-**Returns**: [<code>Result</code>](#getFromHereFunction..Result) - <ul>
+**Kind**: global typedef  
+**Properties**
 
-<li>Functions which calculates paths.</li>
-</ul>  
+| Name     | Type                | Description                              |
+| -------- | ------------------- | ---------------------------------------- |
+| stdio    | <code>Array</code>  | <p>stdio parameter to feed spawn</p>     |
+| encoding | <code>string</code> | <p>encoding to provide to feed spawn</p> |
 
-| Param   | Type                | Description                                        |
-| ------- | ------------------- | -------------------------------------------------- |
-| baseDir | <code>string</code> | <p>Base dir to be used in generated functions.</p> |
+<a name="Executable"></a>
 
+## Executable : <code>string</code> \| <code>Array.&lt;(string\|Array.&lt;string&gt;\|SpawnOptions)&gt;</code>
+
+<p>Type for holding executable. It may be string to store executable name without arguments. For executable
+with arguments or options it is a tuple <code>[bin-name, [arg1, arg2, arg3], spawn-options]</code></p>
+
+**Kind**: global typedef  
 **Example**
 
 ```js
-const { here, hereRelative } = getFromHereFunction(__dirname);
-const absPath = here("a.txt"); // /some/path/mydir/a.txt
-const relativePath = hereRelative("b.txt"); // ./b.txt
+const bin = "tsc";
+const binWithArgs = ["tsc", ["--strict", "--target", "ESNext"]];
+const binWithOptions = ["tsc", ["--strict", "--target", "ESNext"], { encoding: "utf-8" }];
 ```
+
+<a name="ScriptResult"></a>
+
+## ScriptResult : <code>Object</code>
+
+<p>Type for returned value from CLI command.</p>
+
+**Kind**: global typedef  
+**Properties**
+
+| Name    | Type                | Description                                                             |
+| ------- | ------------------- | ----------------------------------------------------------------------- |
+| status  | <code>number</code> | <p>Exit status code of cli command (0: success, other value: error)</p> |
+| [error] | <code>Error</code>  | <p>Error object if execution of cli command fails.</p>                  |
+
+<a name="Script"></a>
+
+## Script : <code>function</code>
+
+<p>Type for script function.</p>
+
+**Kind**: global typedef
+
+| Param     | Type                              | Description                                                                                            |
+| --------- | --------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| project   | [<code>Project</code>](#Project)  | <p>Project instance.</p>                                                                               |
+| args      | <code>Array.&lt;string&gt;</code> | <p>Argument.</p>                                                                                       |
+| scriptKit | <code>ScriptKit</code>            | <p>[ScriptKit](ScriptKit) instance, which have utility methods fro currently executed script file.</p> |

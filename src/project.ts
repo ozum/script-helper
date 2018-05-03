@@ -1,13 +1,21 @@
+import arrify from "arrify";
 import cosmiconfig from "cosmiconfig";
-import * as fs from "fs-extra";
+import spawn from "cross-spawn";
+import fs from "fs-extra";
 import { InternalDataInterface } from "internal-data";
 import pickBy from "lodash.pickby";
-import * as path from "path";
+import path from "path";
 import readPkgUp from "read-pkg-up";
-import ResettableFile, { DataObject, Logger } from "resettable-file";
+import ResettableFile, { DataObject, Logger, BasicLogger } from "resettable-file";
 import { VError } from "verror";
 import which from "which";
-import { findModuleRoot, getPackageAndDir } from "./project-util";
+import managePath from "manage-path";
+import glob from "glob";
+import ScriptKit from "./script-kit";
+import { findModuleRoot, getPackageAndDir, listScripts } from "./project-util";
+import { Script, Executable, ScriptResult, SpawnOptions } from "./@types";
+
+type LogLevel = "none" | "error" | "warn" | "info" | "debug" | "silly";
 
 /**
  * Internal object to store private data.
@@ -23,6 +31,8 @@ type Internal = {
   name: string;
   configFile?: string;
   config: { [key: string]: any };
+  debug: boolean;
+  filesDir: string;
 };
 
 const internalData: InternalDataInterface<Project, Internal> = new WeakMap();
@@ -34,22 +44,34 @@ const internalData: InternalDataInterface<Project, Internal> = new WeakMap();
  */
 export default class Project extends ResettableFile {
   /**
-   * @param   {Object}          [options]                               - Options
-   * @param   {boolean}         [options.track]                         - Sets default tracking option for methods.
-   * @param   {Array.<string>}  [options.sortPackageKeys=["scripts"]]   - Default keys to be sorted in package.json file.
-   * @param   {string}          [options.logLevel="info"]               - Sets log level. ("error", "warn", "info", "debug", "verbose", "silly")
-   * @param   {string}          [options.cwd=[project root]]            - [`Special`] Working directory of project root. (Only for special purposes, normally not necessary.)
-   * @param   {string}          [options.moduleRoot=[module root]]      - [`Special`] Root of the module using this library. (Only for special purposes, normally not necessary.)
-   * @returns {Project}                                                 - Instance
+   * @param   {Object}          [options]                                 - Options
+   * @param   {boolean}         [options.filesDir=require.main.filename]  - Directory of `config` and `script` directories. Default value assumes file called from CLI resides same dir with `scripts` and `config`.
+   * @param   {boolean}         [options.track]                           - Sets default tracking option for methods.
+   * @param   {Array.<string>}  [options.sortPackageKeys=["scripts"]]     - Default keys to be sorted in package.json file.
+   * @param   {LogLevel}        [options.logLevel="info"]                 - Sets log level. ("error", "warn", "info", "debug", "verbose", "silly")
+   * @param   {string}          [options.cwd=[project root]]              - [`Special`] Working directory of project root. (Only for special purposes, normally not necessary.)
+   * @param   {string}          [options.moduleRoot=[module root]]        - [`Special`] Root of the module using this library. (Only for special purposes, normally not necessary.)
+   * @param   {boolean}         [options.debug=false]                     - Turns on debug mode.
+   * @returns {Project}                                                   - Instance
    * @extends ResettableFile
    */
   constructor({
+    filesDir = path.dirname(require!.main!.filename), // Default value assumes file called from CLI resides same dir with `scripts` and `config`.
+    debug = false,
     track = true,
     sortPackageKeys = ["scripts"],
-    logLevel = "info",
+    logLevel = debug ? "debug" : "info",
     moduleRoot = findModuleRoot(),
     cwd,
-  }: { track?: boolean; sortPackageKeys?: string[]; logLevel?: keyof Logger; cwd?: string; moduleRoot?: string } = {}) {
+  }: {
+    filesDir?: string;
+    debug?: boolean;
+    track?: boolean;
+    sortPackageKeys?: string[];
+    logLevel?: keyof BasicLogger;
+    moduleRoot?: string;
+    cwd?: string;
+  } = {}) {
     try {
       const [packageObject, root] = getPackageAndDir({ cwd });
       const name = packageObject.name;
@@ -57,8 +79,13 @@ export default class Project extends ResettableFile {
       const registryFile = path.join(root, `${name}-registry.json`);
       const { config = {}, filePath: configFile = undefined } = cosmiconfig(moduleName, { sync: true }).load(root) || {};
       super(registryFile, { track, logLevel, sourceRoot: moduleRoot });
-      internalData.set(this, { name, moduleName, configFile, config });
+      internalData.set(this, { name, moduleName, configFile, config, debug, filesDir });
       this.getDataObjectSync("package.json", { format: "json", throwNotExists: true, sortKeys: sortPackageKeys });
+      const alterPath = managePath(process.env);
+      alterPath.unshift(this.fromRoot("node_modules/.bin")); // Add .bin folder to path env. (bin like `tsc` can be called directly)
+      if (debug) {
+        this.logger.warn("Debug mode is on");
+      }
     } catch (e) {
       /* istanbul ignore next */
       throw new VError(e, "Cannot initialize project.");
@@ -115,7 +142,7 @@ export default class Project extends ResettableFile {
    * @readonly
    * @type {boolean}
    */
-  get isCompiled() {
+  get isCompiled(): boolean {
     return this.isTypeScript || this.hasAnyDep(["babel-cli", "babel-preset-env"]);
   }
 
@@ -124,8 +151,48 @@ export default class Project extends ResettableFile {
    * @readonly
    * @type {boolean}
    */
-  get isTypeScript() {
+  get isTypeScript(): boolean {
     return this.package.has("types");
+  }
+
+  /**
+   * Lists of available scripts in scripts folder.
+   * @readonly
+   * @type {Array.<string>}
+   */
+  get availableScripts(): Array<string> {
+    // `glob.sync` returns paths with unix style path separators even on Windows.
+    // So we normalize it before attempting to strip out the scripts path.
+    return glob
+      .sync(path.join(this.scriptsDir, "*"))
+      .map(path.normalize)
+      .map(script =>
+        script
+          .replace(this.scriptsDir, "")
+          .replace(/^[/\\]/, "")
+          .replace(/__tests__/, "")
+          .replace(/\.(js|ts)$/, ""),
+      )
+      .filter(Boolean)
+      .sort();
+  }
+
+  /**
+   * Path of the scripts dir.
+   * @readonly
+   * @type {string}
+   */
+  get scriptsDir() {
+    return path.join(internalData.get(this).filesDir, "scripts");
+  }
+
+  /**
+   * Path of the config dir.
+   * @readonly
+   * @type {string}
+   */
+  get configDir() {
+    return path.join(internalData.get(this).filesDir, "config");
   }
 
   /**
@@ -159,6 +226,16 @@ export default class Project extends ResettableFile {
   }
 
   /**
+   * Returns relative path to cwd of given executable located in project's `node_modules/.bin`.
+   * @param   {string} executable - Name of the executable
+   * @returns {string}            - Path of the executable in `node_modules/.bim`
+   */
+  bin(executable: string): string {
+    const relative = path.relative(process.cwd(), this.fromRoot(`node_modules/.bin/${executable}`));
+    return `.${path.sep}${relative}`;
+  }
+
+  /**
    * Finds and returns path of given command.
    * @param   {string}  modName                     - Module name to find executable from.
    * @param   {Object}  [options]                   - Options.
@@ -182,6 +259,7 @@ export default class Project extends ResettableFile {
       /* istanbul ignore next */
       const binPath = typeof bin === "string" ? bin : bin[executable];
       const fullPathToBin = path.join(modPkgDir, binPath);
+      /* istanbul ignore next */
       if (fullPathToBin === pathFromWhich) {
         return executable;
       }
@@ -203,6 +281,24 @@ export default class Project extends ResettableFile {
    */
   fromModuleRoot(...part: string[]): string {
     return this.fromSourceRoot(...part);
+  }
+
+  /**
+   * Returns given path added to path of config directory. Path may be given as a single string or in multiple parts.
+   * @param   {...string} part  - Path relative to config dir.
+   * @returns {string}          - Path in config directory.
+   */
+  fromConfigDir(...part: string[]) {
+    return path.join(this.configDir, ...part);
+  }
+
+  /**
+   * Returns given path added to path of scripts directory. Path may be given as a single string or in multiple parts.
+   * @param   {...string} part  - Path relative to scripts dir.
+   * @returns {string}          - Path in config directory.
+   */
+  fromScriptsDir(...part: string[]) {
+    return path.join(this.scriptsDir, ...part);
   }
 
   /**
@@ -247,6 +343,134 @@ export default class Project extends ResettableFile {
     return defaultValue;
   }
 
+  /* istanbul ignore next */
+  /**
+   * Executes script based on script name from CLI (process.argv). If `exit` is true, also exist
+   * from process with success (0) or failure code (1).
+   * @param   {boolean}           exit  - Whether to exit from process.
+   * @returns {ScriptResult|void}       - Result of script
+   * @throws  {VError}                  - Throws error if script throws error.
+   * @example
+   *
+   * // in my-scripts/lib/index.js
+   * project.executeFromCLI();
+   *
+   * // in package.json
+   * { "scripts": { "test": "my-scripts test" } }
+   *
+   * // on CLI
+   * > npm run test
+   * > node_modules/.bin/my-scripts test
+   */
+  executeFromCLISync(options?: { exit: true }): never | undefined;
+  executeFromCLISync(options: { exit: false }): ScriptResult | Array<ScriptResult> | undefined;
+  executeFromCLISync({ exit = true } = {}): never | ScriptResult | Array<ScriptResult> | undefined {
+    const [executor, ignoredBin, script, ...args] = process.argv;
+    const commandMessage = `"${path.basename(ignoredBin)} ${`${script} ${args.join(" ")}`.trim()}"`;
+
+    if (!script || !this.hasScriptSync(script)) {
+      script ? this.logger.error(`Script cannot be found: ${script}`) : "";
+      listScripts(this.availableScripts);
+      return exit ? process.exit(1) : undefined;
+    }
+
+    try {
+      const results = this.executeScriptFileSync(script, args);
+      const success = Array.isArray(results) ? results.reduce((prev, current) => current.status === 0 && prev, true) : results.status === 0;
+      const consoleErrorMessages: Error[] = [];
+
+      arrify(results).forEach((result: ScriptResult) => {
+        // Log as necessary
+        if (result.error instanceof Error) {
+          this.logger.error(result.error.message); // JS Error in result
+          consoleErrorMessages.push(result.error);
+        } else if (result.error) {
+          this.logger.error(result.error); // Other error in result
+        } else if (!success) {
+          this.logger.error(`${script} finished with error (no error message) in command: ${commandMessage}`); // Fail without error message
+        }
+      });
+
+      this.saveSync();
+      consoleErrorMessages.forEach(console.error);
+      return exit ? process.exit(success ? 0 : 1) : results;
+    } catch (e) {
+      this.saveSync();
+      const error = new VError(e, `Cannot finish of execution of ${commandMessage}`);
+      this.logger.error(error.message);
+      throw error;
+    }
+  }
+
+  /**
+   * Executes given script file's exported `script` function. Script file should be given relative to scripts directory.
+   * @param   {string}                              scriptFile  - Script file to execute in scripts directory.
+   * @param   {Array.<string>}                      [args=[]]   - Arguments to pass script function.
+   * @returns {ScriptResult|Array.<ScriptResult>}               - Result of script function. (If more than one command executed, array of results)
+   * @throws  {VError}                                          - Throws if given file does not export a function in script property.
+   * @example
+   * const result = executeScriptFileSync("build"); // Executes my-scripts/lib/scripts/build
+   */
+  executeScriptFileSync(scriptFile: string, args: Array<string> = []): ScriptResult | Array<ScriptResult> {
+    const file = this.fromScriptsDir(scriptFile);
+    const { script: scriptFunction } = require(file);
+    if (typeof scriptFunction !== "function") {
+      throw new VError("Script file does not export script function. Check script file. (module.exports = { script: () => {} })");
+    }
+
+    return scriptFunction(this, args, new ScriptKit(this, scriptFile));
+  }
+
+  /**
+   * Checks whether given script exists in scripts directory. Script search method is as below:
+   * 1. If given path found (dir or file), returns it.
+   * 2. If file name has no extension, looks a file name with extension in order of `ts`, `js`.
+   * 3. If file name with an extension is found, returns full path of filename including extension.
+   * @param   {string}            scriptFile  - Module file to check existence.
+   * @returns {string|undefined}              - Full path (with extension if it has one). Undefined if not found.
+   */
+  hasScriptSync(scriptFile: string): string | undefined {
+    const scriptPath = this.fromScriptsDir(scriptFile);
+
+    if (fs.existsSync(scriptPath)) {
+      return scriptPath;
+    }
+    if (path.extname(scriptFile) === "") {
+      for (const extension of ["ts", "js"]) {
+        if (fs.existsSync(`${scriptPath}.${extension}`)) {
+          return `${scriptPath}.${extension}`;
+        }
+      }
+    }
+  }
+
+  /**
+   * Executes given binary using `spawn.sync` with given arguments and return results.
+   * @param   {Executable}    executable  - Executable.
+   * @returns {ScriptResult}              - Result of the executable.
+   */
+  executeSync(executable: Executable | { [key: string]: Executable | null }): ScriptResult {
+    const internal = internalData.get(this);
+    let exe = typeof executable === "string" ? executable : "";
+    let args;
+    let options: SpawnOptions = { stdio: "inherit" };
+
+    if (Array.isArray(executable)) {
+      [exe, args] = executable;
+      options = (executable[2] as SpawnOptions) || options;
+    } else if (typeof executable === "object") {
+      exe = this.bin("concurrently");
+      args = this.getConcurrentlyArgs(executable);
+    }
+
+    /* istanbul ignore next */
+    if (internal.debug) {
+      this.logger.debug(new Error().stack!.replace(/^Error/, `Stack Trace for ${exe}`));
+    }
+
+    return spawn.sync(exe, args, options);
+  }
+
   /**
    * Given an object containing keys as script names, values as commands, returns parameters to feed to concurrently.
    * @param   {Object<string, string>}  scripts           - Object with script names as keys, commands as values.
@@ -254,10 +478,10 @@ export default class Project extends ResettableFile {
    * @param   {boolean}                 [killOthers=true] - Whether -kill-others-on-fail should added.
    * @returns {Array<string>}                             - Arguments to use with concurrently.
    */
-  getConcurrentlyArgs(scripts: { [key: string]: string }, { killOthers = true } = {}): string[] {
+  getConcurrentlyArgs(scripts: { [key: string]: Executable | null }, { killOthers = true } = {}): string[] {
     const colors = ["bgBlue", "bgGreen", "bgMagenta", "bgCyan", "bgWhite", "bgRed", "bgBlack", "bgYellow"];
 
-    const fullScripts = pickBy(scripts); // Clear empty keys
+    const fullScripts = pickBy(scripts) as { [key: string]: Executable }; // Clear empty keys
     const prefixColors = Object.keys(fullScripts)
       .reduce((pColors, _s, i) => pColors.concat([`${colors[i % colors.length]}.bold.reset`]), [] as Array<string>)
       .join(",");
@@ -268,7 +492,7 @@ export default class Project extends ResettableFile {
       "--prefix", "[{name}]",
       "--names", Object.keys(fullScripts).join(","),
       "--prefix-colors", prefixColors,
-      ...Object.values(fullScripts).map(s => JSON.stringify(s)), // stringify escapes quotes ✨
+      ...Object.values(fullScripts).map(s => JSON.stringify(typeof s === "string" ? s : `${s[0]} ${s[1].join(" ")}`)),
     ].filter(Boolean);
   }
 
