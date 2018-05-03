@@ -16,7 +16,8 @@
   "homepage": "https://github.com/ozum/script-helper#readme",
   "scripts": {
     "build": "moe-scripts build",
-    "build:doc": "npm run parentClass:get && moe-scripts doc --no-cache && npm run parentClass:remove",
+    "build:doc": "moe-scripts doc",
+    "xbuild:doc": "npm run parentClass:get && moe-scripts doc --no-cache && npm run parentClass:remove",
     "commit": "moe-scripts commit",
     "file": "f() { P=$1; P=${P/src/lib}; P=${P/.ts/.js}; tsc-watch --onSuccess \"node -r source-map-support/register ${P}\"; }; f",
     "format": "moe-scripts format",
