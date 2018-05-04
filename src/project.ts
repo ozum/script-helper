@@ -457,12 +457,13 @@ export default class Project extends ResettableFile {
    * @returns {ScriptResult}              - Result of the executable.
    * @example
    * // Execute some commands serially and concurrently. Commands in object is executed concurrently.
-   * // In example below, `serial-command-1` is executed first, then `serial-command-2` is executed, then
+   * // In example below, `serial-command-1` is executed first, then `serial-command-2` is executed, then based on condition `serial-command-3` is executed or not,
    * // `build-doc-command`, `some-other-command` and `tsc` is executed using `concurrently` module (Keys are names used in log).
    * // Lastly `other-serial-command` is executed. If some command in serial tasks fails, no further command is executed and function would return.
    * const result = project.executeSync(
    *   ["serial-command-1", ["arg"]],
    *   "serial-command-2",
+   *   someCondition ? "serial-command-3" : null,
    *   {
    *     my-parallel-job: ["build-doc-command", ["arg"],
    *     my-parallel-task: "some-other-command"
@@ -471,10 +472,11 @@ export default class Project extends ResettableFile {
    *   ["other-serial-command", ["arg"]],
    * );
    */
-  executeSync(...executables: Array<Executable | { [key: string]: Executable | null }>): ScriptResult {
+  executeSync(...executables: Array<Executable | { [key: string]: Executable | null | undefined } | null | undefined>): ScriptResult {
+    const internal = internalData.get(this);
     if (executables.length > 1) {
       const results: ScriptResult[] = [];
-      for (const executable of executables) {
+      for (const executable of executables.filter(Boolean)) {
         const result = this.executeSync(executable);
         if (result.status !== 0) {
           result.previousResults = results;
@@ -484,8 +486,13 @@ export default class Project extends ResettableFile {
       }
       return { status: 0, previousResults: results };
     }
+
     const executable = executables[0];
-    const internal = internalData.get(this);
+
+    if (executable === null || executable === undefined) {
+      return { status: 0 };
+    }
+
     let exe = typeof executable === "string" ? executable : "";
     let args;
     let options: SpawnOptions = { stdio: "inherit" };
@@ -513,7 +520,7 @@ export default class Project extends ResettableFile {
    * @param   {boolean}                 [killOthers=true] - Whether -kill-others-on-fail should added.
    * @returns {Array<string>}                             - Arguments to use with concurrently.
    */
-  getConcurrentlyArgs(scripts: { [key: string]: Executable | null }, { killOthers = true } = {}): string[] {
+  getConcurrentlyArgs(scripts: { [key: string]: Executable | null | undefined }, { killOthers = true } = {}): string[] {
     const colors = ["bgBlue", "bgGreen", "bgMagenta", "bgCyan", "bgWhite", "bgRed", "bgBlack", "bgYellow"];
 
     const fullScripts = pickBy(scripts) as { [key: string]: Executable }; // Clear empty keys

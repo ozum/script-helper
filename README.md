@@ -241,12 +241,13 @@ module.exports = { script };
 ```js
 function script(project, args, s) {
   // Execute some commands serially and concurrently. Commands in object is executed concurrently.
-  // In example below, `serial-command-1` is executed first, then `serial-command-2` is executed, then
+  // In example below, `serial-command-1` is executed first, then `serial-command-2` is executed, then based on condition `serial-command-3` is executed or not,
   // `build-doc-command`, `some-other-command` and `tsc` is executed using `concurrently` module (Keys are names used in log).
   // Lastly `other-serial-command` is executed. If some command in serial tasks fails, no further command is executed and function would return.
   return project.executeSync(
     ["serial-command-1", ["arg"]],
     "serial-command-2",
+    someCondition ? "serial-command-3" : null,
     {
       my-parallel-job: ["build-doc-command", ["arg"],
       my-parallel-task: "some-other-command"
@@ -884,12 +885,13 @@ and returns result of <code>concurrently</code>.</p>
 
 ```js
 // Execute some commands serially and concurrently. Commands in object is executed concurrently.
-// In example below, `serial-command-1` is executed first, then `serial-command-2` is executed, then
+// In example below, `serial-command-1` is executed first, then `serial-command-2` is executed, then based on condition `serial-command-3` is executed or not,
 // `build-doc-command`, `some-other-command` and `tsc` is executed using `concurrently` module (Keys are names used in log).
 // Lastly `other-serial-command` is executed. If some command in serial tasks fails, no further command is executed and function would return.
 const result = project.executeSync(
   ["serial-command-1", ["arg"]],
   "serial-command-2",
+  someCondition ? "serial-command-3" : null,
   {
     my-parallel-job: ["build-doc-command", ["arg"],
     my-parallel-task: "some-other-command"

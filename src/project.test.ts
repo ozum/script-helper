@@ -428,7 +428,7 @@ describe("project", () => {
     });
 
     it("should execute multiple serial and concurrent scripts", () => {
-      const result = projects.ts.executeSync(["echo", [""]], { echo1: "echo", echo2: ["echo", [""]] }, ["echo", [""]]);
+      const result = projects.ts.executeSync(["echo", [""]], null, { echo1: "echo", echo2: ["echo", [""]] }, ["echo", [""]]);
       expect(result.status).toBe(0);
     });
   });
