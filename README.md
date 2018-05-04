@@ -240,15 +240,20 @@ module.exports = { script };
 
 ```js
 function script(project, args, s) {
-  // Execute some commands concurrently.
-  const result = project.executeSync({ doc: "build-doc-command", other: "some-other-command" });
-
-  if (result.status !== 0) {
-    return result; // Something failed. `result` is failed command's result, but also has `previousResults` attribute.
-  }
-
-  // Execute some commands concurrently and return result.
-  return project.executeSync("some-cli-command", "tsc");
+  // Execute some commands serially and concurrently. Commands in object is executed concurrently.
+  // In example below, `serial-command-1` is executed first, then `serial-command-2` is executed, then
+  // `build-doc-command`, `some-other-command` and `tsc` is executed using `concurrently` module (Keys are names used in log).
+  // Lastly `other-serial-command` is executed. If some command in serial tasks fails, no further command is executed and function would return.
+  return project.executeSync(
+    ["serial-command-1", ["arg"]],
+    "serial-command-2",
+    {
+      my-parallel-job: ["build-doc-command", ["arg"],
+      my-parallel-task: "some-other-command"
+      builder: ["tsc", ["arg"],
+    },
+    ["other-serial-command", ["arg"]],
+  );
 }
 
 module.exports = { script };
@@ -874,6 +879,25 @@ and returns result of <code>concurrently</code>.</p>
 | Param          | Type                                   | Description                       |
 | -------------- | -------------------------------------- | --------------------------------- |
 | ...executables | [<code>Executable</code>](#Executable) | <p>Executable or executables.</p> |
+
+**Example**
+
+```js
+// Execute some commands serially and concurrently. Commands in object is executed concurrently.
+// In example below, `serial-command-1` is executed first, then `serial-command-2` is executed, then
+// `build-doc-command`, `some-other-command` and `tsc` is executed using `concurrently` module (Keys are names used in log).
+// Lastly `other-serial-command` is executed. If some command in serial tasks fails, no further command is executed and function would return.
+const result = project.executeSync(
+  ["serial-command-1", ["arg"]],
+  "serial-command-2",
+  {
+    my-parallel-job: ["build-doc-command", ["arg"],
+    my-parallel-task: "some-other-command"
+    builder: ["tsc", ["arg"],
+  },
+  ["other-serial-command", ["arg"]],
+);
+```
 
 <a name="Project+getConcurrentlyArgs"></a>
 

@@ -455,6 +455,21 @@ export default class Project extends ResettableFile {
    * and returns result of `concurrently`.
    * @param   {...Executable} executables - Executable or executables.
    * @returns {ScriptResult}              - Result of the executable.
+   * @example
+   * // Execute some commands serially and concurrently. Commands in object is executed concurrently.
+   * // In example below, `serial-command-1` is executed first, then `serial-command-2` is executed, then
+   * // `build-doc-command`, `some-other-command` and `tsc` is executed using `concurrently` module (Keys are names used in log).
+   * // Lastly `other-serial-command` is executed. If some command in serial tasks fails, no further command is executed and function would return.
+   * const result = project.executeSync(
+   *   ["serial-command-1", ["arg"]],
+   *   "serial-command-2",
+   *   {
+   *     my-parallel-job: ["build-doc-command", ["arg"],
+   *     my-parallel-task: "some-other-command"
+   *     builder: ["tsc", ["arg"],
+   *   },
+   *   ["other-serial-command", ["arg"]],
+   * );
    */
   executeSync(...executables: Array<Executable | { [key: string]: Executable | null }>): ScriptResult {
     if (executables.length > 1) {
