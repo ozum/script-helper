@@ -77,7 +77,7 @@ export default class Project extends ResettableFile {
   } = {}) {
     try {
       const [packageObject, root] = getPackageAndDir({ cwd });
-      const name = packageObject.name;
+      const name = packageObject.name.replace(/^.*?\//, ""); // delete @user from beginning of package.name if exists.
       const moduleName = fs.readJsonSync(path.join(moduleRoot, "package.json")).name;
       const registryFile = path.join(root, `${name}-registry.json`);
       const { config = {}, filePath: configFile = undefined } = cosmiconfig(moduleName, { sync: true }).load(root) || {};
@@ -487,11 +487,11 @@ export default class Project extends ResettableFile {
       return { status: 0, previousResults: results };
     }
 
-    const executable = executables[0];
-
-    if (executable === null || executable === undefined) {
+    if (executables.length === 0) {
       return { status: 0 };
     }
+
+    const executable = executables[0]!;
 
     let exe = typeof executable === "string" ? executable : "";
     let args;

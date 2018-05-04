@@ -397,38 +397,43 @@ describe("project", () => {
   });
 
   describe("executeSync() method", () => {
-    it("should execute single script", () => {
+    it("should execute single command", () => {
       const result = projects.ts.executeSync("echo");
       expect(result.status).toBe(0);
     });
 
-    it("should execute single failing script", () => {
+    it("should execute single failing command", () => {
       const result = projects.ts.executeSync("non-existing-command");
       expect(result.error).toBeDefined();
     });
 
-    it("should execute single script with parameters", () => {
+    it("should execute single command with parameters", () => {
       const result = projects.ts.executeSync(["echo", [""]]);
       expect(result.status).toBe(0);
     });
 
-    it("should execute multiple serial scripts", () => {
+    it("should execute multiple commands scripts", () => {
       const result = projects.ts.executeSync("echo", ["echo", [""]]);
       expect(result.status).toBe(0);
     });
 
-    it("should execute multiple serial scripts which some fails", () => {
+    it("should execute multiple serial commands which some fails", () => {
       const result = projects.ts.executeSync("echo", "not-existing-cmd", ["echo", [""]]);
       expect([result.error !== undefined, result.previousResults.length]).toEqual([true, 1]);
     });
 
-    it("should execute multiple concurrent scripts", () => {
+    it("should execute multiple concurrent commands", () => {
       const result = projects.ts.executeSync({ echo1: "echo", echo2: ["echo", [""]] });
       expect(result.status).toBe(0);
     });
 
-    it("should execute multiple serial and concurrent scripts", () => {
+    it("should execute multiple serial and concurrent commands", () => {
       const result = projects.ts.executeSync(["echo", [""]], null, { echo1: "echo", echo2: ["echo", [""]] }, ["echo", [""]]);
+      expect(result.status).toBe(0);
+    });
+
+    it("should return success if no commands provided", () => {
+      const result = projects.ts.executeSync();
       expect(result.status).toBe(0);
     });
   });
