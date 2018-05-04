@@ -4,6 +4,8 @@ import * as path from "path";
 import { rename, rmdir, existsSync, copy, emptyDir } from "fs-extra";
 import * as os from "os";
 import VError from "verror";
+import { BasicLogger } from "resettable-file";
+
 import { Project } from "../index";
 
 const [exec, setTimeoutPromise] = [promisify(childProcess.exec), promisify(setTimeout)];
@@ -38,6 +40,15 @@ const paths: Paths = {
       helper: path.normalize(`${BASEPATH}/project-module-babel/node_modules/script-helper`),
     },
   },
+};
+
+export const stubLogger: BasicLogger = {
+  error: () => {},
+  warn: () => {},
+  info: () => {},
+  debug: () => {},
+  verbose: () => {},
+  silly: () => {},
 };
 
 async function packModule(src: string, target: string) {

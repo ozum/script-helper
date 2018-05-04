@@ -70,7 +70,7 @@ module.exports = project; // If you don't want to use execute() helper, you can 
 // If called from directly from CLI
 if (require.main === module) {
   try {
-    execute({ project }); // Optional helper which executes scripts in 'scripts' directory, which is in same directory with this file.
+    const result = project.executeFromCLISync(); // Optional helper which executes scripts in 'scripts' directory, which is in same directory with this file.
   } catch (e) {
     console.error(e);
     process.exit(1);
@@ -78,9 +78,15 @@ if (require.main === module) {
 }
 ```
 
+`project.executeFromCLISync()` takes script name to execute and arguments from `process.argv` and requires your script and executes it's exported `script()` function, and passes 3 parameters.
+
+1. `project`: {@link Project} instance, to help tasks related to project module.
+1. `args`: args passed from CLI.
+1. `s`: {@link ScriptKit} instance, to help tasks related to script file which will be executed.
+
 ### my-scripts/lib/scripts/init.js
 ```js
-function script(project, args) {
+function script(project, args, s) {
   // Reset previous modifications
   project.reset();
 
@@ -108,7 +114,7 @@ module.exports = { script };
 
 ### my-scripts/lib/scripts/reset.js
 ```js
-function script(project) {
+function script(project, args, s) {
   // Reset all created files, symlinks, changed JSON and YAML entries if they are not changed by user.
   // All modifications are tracked in a JSON file called 'my-scripts-registry.json'
   // 'my-scripts' is the name of your module and file name is shaped according the name of your module.
@@ -118,20 +124,42 @@ function script(project) {
 module.exports = { script };
 ```
 
-### my-scripts/lib/scripts/test.js
+### my-scripts/lib/scripts/build/index.js
+
 ```js
-function script(project) {
-  // Your test related script. Do some testing stuff, execute mocha, jest or spawn something.
+function script(project, args, s) {
+  // s is ScriptKit instance, see API doc.
+  const subScript = project.isTypeScript ? "tsc" : "babel";
+
+  // Executes my-scripts/lib/scripts/build/tsc.js or my-scripts/lib/scripts/build/babel.js
+  return s.executeSubScriptSync(subScript, args);
 }
 
 module.exports = { script };
 ```
 
-### my-scripts/lib/scripts/build.js
+### my-scripts/lib/scripts/build/tsc.js
 
 ```js
-function script(project) {
-  // Your build related script.
+function script(project, args, s) {
+  // Execute some commands concurrently.
+  const result = project.executeSync({ doc: "build-doc-command", other: "some-other-command" });
+
+  if (result.status !== 0) {
+    return result;  // Something failed. `result` is failed command's result, but also has `previousResults` attribute.
+  }
+
+  // Execute some commands concurrently and return result.
+  return project.executeSync("some-cli-command", "tsc");
+}
+
+module.exports = { script };
+```
+
+### my-scripts/lib/scripts/test.js
+```js
+function script(project, args, s) {
+  // Your test related script. Do some testing stuff, execute mocha, jest or spawn something.
 }
 
 module.exports = { script };

@@ -52,6 +52,7 @@ export default class Project extends ResettableFile {
    * @param   {string}          [options.cwd=[project root]]              - [`Special`] Working directory of project root. (Only for special purposes, normally not necessary.)
    * @param   {string}          [options.moduleRoot=[module root]]        - [`Special`] Root of the module using this library. (Only for special purposes, normally not necessary.)
    * @param   {boolean}         [options.debug=false]                     - Turns on debug mode.
+   * @param   {Logger}          [options.logger]                          - A looger instance such as winston. Must implement `info`, `warn`, `error`, `verbose`, `silly`.
    * @returns {Project}                                                   - Instance
    * @extends ResettableFile
    */
@@ -63,6 +64,7 @@ export default class Project extends ResettableFile {
     logLevel = debug ? "debug" : "info",
     moduleRoot = findModuleRoot(),
     cwd,
+    logger,
   }: {
     filesDir?: string;
     debug?: boolean;
@@ -71,6 +73,7 @@ export default class Project extends ResettableFile {
     logLevel?: keyof BasicLogger;
     moduleRoot?: string;
     cwd?: string;
+    logger?: Logger;
   } = {}) {
     try {
       const [packageObject, root] = getPackageAndDir({ cwd });
@@ -78,7 +81,7 @@ export default class Project extends ResettableFile {
       const moduleName = fs.readJsonSync(path.join(moduleRoot, "package.json")).name;
       const registryFile = path.join(root, `${name}-registry.json`);
       const { config = {}, filePath: configFile = undefined } = cosmiconfig(moduleName, { sync: true }).load(root) || {};
-      super(registryFile, { track, logLevel, sourceRoot: moduleRoot });
+      super(registryFile, { track, logLevel, logger, sourceRoot: moduleRoot });
       internalData.set(this, { name, moduleName, configFile, config, debug, filesDir });
       this.getDataObjectSync("package.json", { format: "json", throwNotExists: true, sortKeys: sortPackageKeys });
       const alterPath = managePath(process.env);
@@ -276,8 +279,8 @@ export default class Project extends ResettableFile {
 
   /**
    * Joins parts to form a path using `path.join`. Returns path in module by adding module root at the beginning of path.
-   * @param   {Array<string>} part  - Path parts to get path relative to module root.
-   * @returns {string}              - Full path to module file.
+   * @param   {...string} part  - Path parts to get path relative to module root.
+   * @returns {string}          - Full path to module file.
    */
   fromModuleRoot(...part: string[]): string {
     return this.fromSourceRoot(...part);
@@ -446,10 +449,27 @@ export default class Project extends ResettableFile {
 
   /**
    * Executes given binary using `spawn.sync` with given arguments and return results.
-   * @param   {Executable}    executable  - Executable.
+   * For single {@link Executable}, it executes and returns result. For multiple {@link Executable Executables}, it executes them
+   * serially. Execution stops and function returns result, if one of the commands fails (also adds previous results in `result.previousResults`).
+   * If an object is provided with names as keys and {@link Executable Executables} as values, it executes them using `concurrently`
+   * and returns result of `concurrently`.
+   * @param   {...Executable} executables - Executable or executables.
    * @returns {ScriptResult}              - Result of the executable.
    */
-  executeSync(executable: Executable | { [key: string]: Executable | null }): ScriptResult {
+  executeSync(...executables: Array<Executable | { [key: string]: Executable | null }>): ScriptResult {
+    if (executables.length > 1) {
+      const results: ScriptResult[] = [];
+      for (const executable of executables) {
+        const result = this.executeSync(executable);
+        if (result.status !== 0) {
+          result.previousResults = results;
+          return result;
+        }
+        results.push(result);
+      }
+      return { status: 0, previousResults: results };
+    }
+    const executable = executables[0];
     const internal = internalData.get(this);
     let exe = typeof executable === "string" ? executable : "";
     let args;

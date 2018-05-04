@@ -20,8 +20,9 @@ Helper for creating and maintaining boilerplates, configurations and script modu
     * [my-scripts/lib/index.js](#my-scriptslibindexjs)
     * [my-scripts/lib/scripts/init.js](#my-scriptslibscriptsinitjs)
     * [my-scripts/lib/scripts/reset.js](#my-scriptslibscriptsresetjs)
+    * [my-scripts/lib/scripts/build/index.js](#my-scriptslibscriptsbuildindexjs)
+    * [my-scripts/lib/scripts/build/tsc.js](#my-scriptslibscriptsbuildtscjs)
     * [my-scripts/lib/scripts/test.js](#my-scriptslibscriptstestjs)
-    * [my-scripts/lib/scripts/build.js](#my-scriptslibscriptsbuildjs)
   * [npm project module](#npm-project-module)
     * [package.json](#packagejson)
 * [Configuration](#configuration-1)
@@ -62,7 +63,7 @@ Helper for creating and maintaining boilerplates, configurations and script modu
     * [project.executeFromCLISync(exit) ⇒ <code>ScriptResult</code> \| <code>void</code>](#projectexecutefromclisyncexit-%E2%87%92-codescriptresultcode-%5C-codevoidcode)
     * [project.executeScriptFileSync(scriptFile, [args]) ⇒ <code>ScriptResult</code> \| <code>Array.&lt;ScriptResult&gt;</code>](#projectexecutescriptfilesyncscriptfile-args-%E2%87%92-codescriptresultcode-%5C-codearrayltscriptresultgtcode)
     * [project.hasScriptSync(scriptFile) ⇒ <code>string</code> \| <code>undefined</code>](#projecthasscriptsyncscriptfile-%E2%87%92-codestringcode-%5C-codeundefinedcode)
-    * [project.executeSync(executable) ⇒ <code>ScriptResult</code>](#projectexecutesyncexecutable-%E2%87%92-codescriptresultcode)
+    * [project.executeSync(...executables) ⇒ <code>ScriptResult</code>](#projectexecutesyncexecutables-%E2%87%92-codescriptresultcode)
     * [project.getConcurrentlyArgs(scripts, [options], [killOthers]) ⇒ <code>Array.&lt;string&gt;</code>](#projectgetconcurrentlyargsscripts-options-killothers-%E2%87%92-codearrayltstringgtcode)
     * [project.isOptedOut(key, [t], [f]) ⇒ <code>\*</code>](#projectisoptedoutkey-t-f-%E2%87%92-code%5Ccode)
     * [project.isOptedIn(key, [t], [f]) ⇒ <code>\*</code>](#projectisoptedinkey-t-f-%E2%87%92-code%5Ccode)
@@ -167,7 +168,7 @@ module.exports = project; // If you don't want to use execute() helper, you can 
 // If called from directly from CLI
 if (require.main === module) {
   try {
-    execute({ project }); // Optional helper which executes scripts in 'scripts' directory, which is in same directory with this file.
+    const result = project.executeFromCLISync(); // Optional helper which executes scripts in 'scripts' directory, which is in same directory with this file.
   } catch (e) {
     console.error(e);
     process.exit(1);
@@ -175,10 +176,16 @@ if (require.main === module) {
 }
 ```
 
+`project.executeFromCLISync()` takes script name to execute and arguments from `process.argv` and requires your script and executes it's exported `script()` function, and passes 3 parameters.
+
+1.  `project`: {@link Project} instance, to help tasks related to project module.
+1.  `args`: args passed from CLI.
+1.  `s`: {@link ScriptKit} instance, to help tasks related to script file which will be executed.
+
 ### my-scripts/lib/scripts/init.js
 
 ```js
-function script(project, args) {
+function script(project, args, s) {
   // Reset previous modifications
   project.reset();
 
@@ -205,7 +212,7 @@ module.exports = { script };
 ### my-scripts/lib/scripts/reset.js
 
 ```js
-function script(project) {
+function script(project, args, s) {
   // Reset all created files, symlinks, changed JSON and YAML entries if they are not changed by user.
   // All modifications are tracked in a JSON file called 'my-scripts-registry.json'
   // 'my-scripts' is the name of your module and file name is shaped according the name of your module.
@@ -215,21 +222,43 @@ function script(project) {
 module.exports = { script };
 ```
 
-### my-scripts/lib/scripts/test.js
+### my-scripts/lib/scripts/build/index.js
 
 ```js
-function script(project) {
-  // Your test related script. Do some testing stuff, execute mocha, jest or spawn something.
+function script(project, args, s) {
+  // s is ScriptKit instance, see API doc.
+  const subScript = project.isTypeScript ? "tsc" : "babel";
+
+  // Executes my-scripts/lib/scripts/build/tsc.js or my-scripts/lib/scripts/build/babel.js
+  return s.executeSubScriptSync(subScript, args);
 }
 
 module.exports = { script };
 ```
 
-### my-scripts/lib/scripts/build.js
+### my-scripts/lib/scripts/build/tsc.js
 
 ```js
-function script(project) {
-  // Your build related script.
+function script(project, args, s) {
+  // Execute some commands concurrently.
+  const result = project.executeSync({ doc: "build-doc-command", other: "some-other-command" });
+
+  if (result.status !== 0) {
+    return result; // Something failed. `result` is failed command's result, but also has `previousResults` attribute.
+  }
+
+  // Execute some commands concurrently and return result.
+  return project.executeSync("some-cli-command", "tsc");
+}
+
+module.exports = { script };
+```
+
+### my-scripts/lib/scripts/test.js
+
+```js
+function script(project, args, s) {
+  // Your test related script. Do some testing stuff, execute mocha, jest or spawn something.
 }
 
 module.exports = { script };
@@ -399,7 +428,7 @@ Also provides <code>reset()</code> method which reverses all modifications made 
   * [.executeFromCLISync(exit)](#Project+executeFromCLISync) ⇒ [<code>ScriptResult</code>](#ScriptResult) \| <code>void</code>
   * [.executeScriptFileSync(scriptFile, [args])](#Project+executeScriptFileSync) ⇒ [<code>ScriptResult</code>](#ScriptResult) \| [<code>Array.&lt;ScriptResult&gt;</code>](#ScriptResult)
   * [.hasScriptSync(scriptFile)](#Project+hasScriptSync) ⇒ <code>string</code> \| <code>undefined</code>
-  * [.executeSync(executable)](#Project+executeSync) ⇒ [<code>ScriptResult</code>](#ScriptResult)
+  * [.executeSync(...executables)](#Project+executeSync) ⇒ [<code>ScriptResult</code>](#ScriptResult)
   * [.getConcurrentlyArgs(scripts, [options], [killOthers])](#Project+getConcurrentlyArgs) ⇒ <code>Array.&lt;string&gt;</code>
   * [.isOptedOut(key, [t], [f])](#Project+isOptedOut) ⇒ <code>\*</code>
   * [.isOptedIn(key, [t], [f])](#Project+isOptedIn) ⇒ <code>\*</code>
@@ -436,6 +465,7 @@ Also provides <code>reset()</code> method which reverses all modifications made 
 | [options.cwd]             | <code>string</code>               | <code>&quot;[project root]&quot;</code> | <p>[<code>Special</code>] Working directory of project root. (Only for special purposes, normally not necessary.)</p>                                                                       |
 | [options.moduleRoot]      | <code>string</code>               | <code>&quot;[module root]&quot;</code>  | <p>[<code>Special</code>] Root of the module using this library. (Only for special purposes, normally not necessary.)</p>                                                                   |
 | [options.debug]           | <code>boolean</code>              | <code>false</code>                      | <p>Turns on debug mode.</p>                                                                                                                                                                 |
+| [options.logger]          | <code>Logger</code>               |                                         | <p>A looger instance such as winston. Must implement <code>info</code>, <code>warn</code>, <code>error</code>, <code>verbose</code>, <code>silly</code>.</p>                                |
 
 <a name="Project+name"></a>
 
@@ -653,9 +683,9 @@ project.resolveScriptsBin(); // my-scripts (executable of this libraray)
 <li>Full path to module file.</li>
 </ul>  
 
-| Param   | Type                              | Description                                            |
-| ------- | --------------------------------- | ------------------------------------------------------ |
-| ...part | <code>Array.&lt;string&gt;</code> | <p>Path parts to get path relative to module root.</p> |
+| Param   | Type                | Description                                            |
+| ------- | ------------------- | ------------------------------------------------------ |
+| ...part | <code>string</code> | <p>Path parts to get path relative to module root.</p> |
 
 <a name="Project+fromConfigDir"></a>
 
@@ -827,9 +857,13 @@ const result = executeScriptFileSync("build"); // Executes my-scripts/lib/script
 
 <a name="Project+executeSync"></a>
 
-### project.executeSync(executable) ⇒ [<code>ScriptResult</code>](#ScriptResult)
+### project.executeSync(...executables) ⇒ [<code>ScriptResult</code>](#ScriptResult)
 
-<p>Executes given binary using <code>spawn.sync</code> with given arguments and return results.</p>
+<p>Executes given binary using <code>spawn.sync</code> with given arguments and return results.
+For single [Executable](#Executable), it executes and returns result. For multiple [Executables](#Executable), it executes them
+serially. Execution stops and function returns result, if one of the commands fails (also adds previous results in <code>result.previousResults</code>).
+If an object is provided with names as keys and [Executables](#Executable) as values, it executes them using <code>concurrently</code>
+and returns result of <code>concurrently</code>.</p>
 
 **Kind**: instance method of [<code>Project</code>](#Project)  
 **Returns**: [<code>ScriptResult</code>](#ScriptResult) - <ul>
@@ -837,9 +871,9 @@ const result = executeScriptFileSync("build"); // Executes my-scripts/lib/script
 <li>Result of the executable.</li>
 </ul>  
 
-| Param      | Type                                   | Description        |
-| ---------- | -------------------------------------- | ------------------ |
-| executable | [<code>Executable</code>](#Executable) | <p>Executable.</p> |
+| Param          | Type                                   | Description                       |
+| -------------- | -------------------------------------- | --------------------------------- |
+| ...executables | [<code>Executable</code>](#Executable) | <p>Executable or executables.</p> |
 
 <a name="Project+getConcurrentlyArgs"></a>
 
@@ -1588,10 +1622,11 @@ const binWithOptions = ["tsc", ["--strict", "--target", "ESNext"], { encoding: "
 **Kind**: global typedef  
 **Properties**
 
-| Name    | Type                | Description                                                             |
-| ------- | ------------------- | ----------------------------------------------------------------------- |
-| status  | <code>number</code> | <p>Exit status code of cli command (0: success, other value: error)</p> |
-| [error] | <code>Error</code>  | <p>Error object if execution of cli command fails.</p>                  |
+| Name              | Type                                                     | Description                                                                                   |
+| ----------------- | -------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| status            | <code>number</code>                                      | <p>Exit status code of cli command (0: success, other value: error)</p>                       |
+| [error]           | <code>Error</code>                                       | <p>Error object if execution of cli command fails.</p>                                        |
+| [previousResults] | [<code>Array.&lt;ScriptResult&gt;</code>](#ScriptResult) | <p>If more than one command is executed serially, results of prevoulsy executed commands.</p> |
 
 <a name="Script"></a>
 

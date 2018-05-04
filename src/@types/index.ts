@@ -22,10 +22,11 @@ export type Executable = string | [string, Array<string>] | [string, Array<strin
 /**
  * Type for returned value from CLI command.
  * @typedef {Object} ScriptResult
- * @property {number}   status   - Exit status code of cli command (0: success, other value: error)
- * @property {Error}    [error]  - Error object if execution of cli command fails.
+ * @property {number}                 status              - Exit status code of cli command (0: success, other value: error)
+ * @property {Error}                  [error]             - Error object if execution of cli command fails.
+ * @property {Array.<ScriptResult>}   [previousResults]   - If more than one command is executed serially, results of prevoulsy executed commands.
  */
-export type ScriptResult = { status: number; error?: Error };
+export type ScriptResult = { status: number; error?: Error; previousResults?: Array<ScriptResult> };
 
 /**
  * Type for script function.

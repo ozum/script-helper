@@ -1,6 +1,15 @@
 import path from "path";
 import fs from "fs-extra";
-import { paths, getProject, getFileName, ProjectName, getInstalledProject, installProjects, clear } from "./__test_supplements__/test-util";
+import {
+  paths,
+  getProject,
+  getFileName,
+  ProjectName,
+  getInstalledProject,
+  installProjects,
+  clear,
+  stubLogger,
+} from "./__test_supplements__/test-util";
 import { Project, ScriptKit } from "./index";
 import { VError } from "verror";
 import { ScriptResult } from "./@types";
@@ -133,7 +142,7 @@ describe("project", () => {
     });
 
     it("should resolve scripts binary if script module itself is also project", () => {
-      const selfProject = new Project({ cwd: paths.scriptsSource, moduleRoot: paths.scriptsSource, debug: true });
+      const selfProject = new Project({ cwd: paths.scriptsSource, moduleRoot: paths.scriptsSource, debug: true, logger: stubLogger });
       expect(selfProject.resolveScriptsBin()).toBe("./src/index.ts"); // For coverage
     });
   });
@@ -393,12 +402,27 @@ describe("project", () => {
       expect(result.status).toBe(0);
     });
 
+    it("should execute single failing script", () => {
+      const result = projects.ts.executeSync("non-existing-command");
+      expect(result.error).toBeDefined();
+    });
+
     it("should execute single script with parameters", () => {
       const result = projects.ts.executeSync(["echo", [""]]);
       expect(result.status).toBe(0);
     });
 
-    it("should execute multiple scripts", () => {
+    it("should execute multiple serial scripts", () => {
+      const result = projects.ts.executeSync("echo", ["echo", [""]]);
+      expect(result.status).toBe(0);
+    });
+
+    it("should execute multiple serial scripts which some fails", () => {
+      const result = projects.ts.executeSync("echo", "not-existing-cmd", ["echo", [""]]);
+      expect([result.error !== undefined, result.previousResults.length]).toEqual([true, 1]);
+    });
+
+    it("should execute multiple concurrent scripts", () => {
       const result = projects.ts.executeSync({ echo1: "echo", echo2: ["echo", [""]] });
       expect(result.status).toBe(0);
     });
