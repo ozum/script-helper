@@ -77,7 +77,7 @@ export default class Project extends ResettableFile {
   } = {}) {
     try {
       const [packageObject, root] = getPackageAndDir({ cwd });
-      const name = packageObject.name.replace(/^.*?\//, ""); // delete @user from beginning of package.name if exists.
+      const name = packageObject.name;
       const moduleName = fs.readJsonSync(path.join(moduleRoot, "package.json")).name;
       const registryFile = path.join(root, `${name}-registry.json`);
       const { config = {}, filePath: configFile = undefined } = cosmiconfig(moduleName, { sync: true }).load(root) || {};
@@ -212,24 +212,7 @@ export default class Project extends ResettableFile {
   }
 
   /**
-   * Finds and returns path to module's binary. (Module which requires this library)
-   * @param   {Object}  [options]                   - Options.
-   * @param   {string}  [cwd=process.cwd()]         - Current working directory
-   * @returns {string|undefined} - Path to parent module's binary.
-   * @example
-   * project.resolveScriptsBin(); // my-scripts (executable of this libraray)
-   */
-  resolveScriptsBin({ cwd = process.cwd() } = {}): string | undefined {
-    if (this.package.get("name") === this.moduleName) {
-      const module = require.resolve("./");
-      /* istanbul ignore next */
-      return module ? module.replace(cwd + path.sep, "." + path.sep) : undefined;
-    }
-    return this.resolveBin(this.moduleName, { cwd });
-  }
-
-  /**
-   * Returns relative path to cwd of given executable located in project's `node_modules/.bin`.
+   * Returns relative path to given executable located in project's `node_modules/.bin`.
    * @param   {string} executable - Name of the executable
    * @returns {string}            - Path of the executable in `node_modules/.bim`
    */
@@ -239,18 +222,48 @@ export default class Project extends ResettableFile {
   }
 
   /**
-   * Finds and returns path of given command.
+   * Finds and returns path to module's binary. (Module which requires this library)
+   * @param   {Object}  [options]                   - Options.
+   * @param   {string}  [executable]                - Executable name.
+   * @param   {string}  [cwd=process.cwd()]         - Current working directory
+   * @returns {string|undefined} - Path to parent module's binary.
+   * @example
+   * project.resolveScriptsBin(); // my-scripts (executable of this libraray)
+   */
+  resolveScriptsBin({ executable = "", cwd = process.cwd() } = {}): string | undefined {
+    if (this.package.get("name") === this.moduleName) {
+      const module = require.resolve("./");
+      /* istanbul ignore next */
+      return module ? module.replace(cwd + path.sep, "." + path.sep) : undefined;
+    }
+    return this.resolveBin(this.moduleName, { executable, cwd });
+  }
+
+  /**
+   * Finds and returns path of given command, trying to following steps:
+   * 1. If it is a command defined in path, returns it's path.
+   * 2. Searches if given node module is installed.
+   * 2.a. If executable is given, looks `bin[executable]` in module's package.json.
+   * 2.b. If no executable is given, looks `bin[module name]` in module's package.json.
+   * 2.c. If found returns it's path.
+   * 3. Throws error.
+   * module name is used by default.
    * @param   {string}  modName                     - Module name to find executable from.
    * @param   {Object}  [options]                   - Options.
    * @param   {string}  [executable=param.modName]  - Executable name. (Defaults to module name)
    * @param   {string}  [cwd=process.cwd()]         - Current working directory
    * @returns {string}                              - Path to binary.
-   * @throws  {Error}                               - Throws error no binary cannot be found.
+   * @throws  {VError}                               - Throws error no binary cannot be found.
+   * @example
+   * project.resolveBin("typescript", { executable: "tsc" }); // Searches typescript module, looks `bin.tsc` in package.json and returns it's path.
+   * project.resolveBin("tsc"); // If `tsc` is defined in PATH, returns `tsc`s path, otherwise searches "tsc" module, which returns no result and throws error.
+   * project.resolveBin("some-cmd"); // Searches "some-cmd" module and
    */
-  resolveBin(modName: string, { executable = modName, cwd = process.cwd() } = {}): string {
+  resolveBin(modName: string, { executable = "", cwd = process.cwd() } = {}): string {
     let pathFromWhich;
+    let binPath;
     try {
-      const whichExecutable = which.sync(executable);
+      const whichExecutable = which.sync(executable || modName);
       pathFromWhich = fs.realpathSync(whichExecutable);
     } catch (_error) {
       // ignore _error
@@ -260,20 +273,29 @@ export default class Project extends ResettableFile {
       const modPkgDir = path.dirname(modPkgPath!);
       const { bin } = require(modPkgPath!);
       /* istanbul ignore next */
-      const binPath = typeof bin === "string" ? bin : bin[executable];
+      if (typeof bin === "string" && (!executable || bin === executable)) {
+        binPath = bin;
+      } else if (typeof bin === "object" && executable && bin[executable]) {
+        binPath = bin[executable];
+      } else if (typeof bin === "object" && !executable) {
+        binPath = Object.keys(bin).length === 1 ? Object.values(bin)[0] : bin[modName];
+      }
+
+      if (!binPath) {
+        throw new VError(`There is no "bin.${executable || modName}" or default (string or single entry object) "bin" in package.json.`);
+      }
       const fullPathToBin = path.join(modPkgDir, binPath);
-      /* istanbul ignore next */
+      /* istanbul ignore if */
       if (fullPathToBin === pathFromWhich) {
-        return executable;
+        return executable || modName;
       }
       return fullPathToBin.replace(cwd + path.sep, "." + path.sep);
-    } catch (error) {
-      /* istanbul ignore next */
+    } catch (e) {
       if (pathFromWhich) {
-        return executable;
+        return executable || modName;
       }
       /* istanbul ignore next */
-      throw error;
+      throw new VError(e, `Cannot resolve bin: "${executable || modName}" in "${modName}" module.`);
     }
   }
 

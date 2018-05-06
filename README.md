@@ -51,8 +51,8 @@ Helper for creating and maintaining boilerplates, configurations and script modu
     * [project.logger : <code>BasicLogger</code>](#projectlogger--codebasicloggercode)
     * [project.logLevel : <code>string</code>](#projectloglevel--codestringcode)
     * [project.resolveModule(name) ⇒ <code>string</code>](#projectresolvemodulename-%E2%87%92-codestringcode)
-    * [project.resolveScriptsBin([options], [cwd]) ⇒ <code>string</code> \| <code>undefined</code>](#projectresolvescriptsbinoptions-cwd-%E2%87%92-codestringcode-%5C-codeundefinedcode)
     * [project.bin(executable) ⇒ <code>string</code>](#projectbinexecutable-%E2%87%92-codestringcode)
+    * [project.resolveScriptsBin([options], [executable], [cwd]) ⇒ <code>string</code> \| <code>undefined</code>](#projectresolvescriptsbinoptions-executable-cwd-%E2%87%92-codestringcode-%5C-codeundefinedcode)
     * [project.resolveBin(modName, [options], [executable], [cwd]) ⇒ <code>string</code>](#projectresolvebinmodname-options-executable-cwd-%E2%87%92-codestringcode)
     * [project.fromModuleRoot(...part) ⇒ <code>string</code>](#projectfrommodulerootpart-%E2%87%92-codestringcode)
     * [project.fromConfigDir(...part) ⇒ <code>string</code>](#projectfromconfigdirpart-%E2%87%92-codestringcode)
@@ -422,8 +422,8 @@ Also provides <code>reset()</code> method which reverses all modifications made 
   * [.logger](#ResettableFile+logger) : <code>BasicLogger</code>
   * [.logLevel](#ResettableFile+logLevel) : <code>string</code>
   * [.resolveModule(name)](#Project+resolveModule) ⇒ <code>string</code>
-  * [.resolveScriptsBin([options], [cwd])](#Project+resolveScriptsBin) ⇒ <code>string</code> \| <code>undefined</code>
   * [.bin(executable)](#Project+bin) ⇒ <code>string</code>
+  * [.resolveScriptsBin([options], [executable], [cwd])](#Project+resolveScriptsBin) ⇒ <code>string</code> \| <code>undefined</code>
   * [.resolveBin(modName, [options], [executable], [cwd])](#Project+resolveBin) ⇒ <code>string</code>
   * [.fromModuleRoot(...part)](#Project+fromModuleRoot) ⇒ <code>string</code>
   * [.fromConfigDir(...part)](#Project+fromConfigDir) ⇒ <code>string</code>
@@ -614,34 +614,11 @@ Also provides <code>reset()</code> method which reverses all modifications made 
 project.resolveModule("fs-extra"); // /path/to/project-module/node_modules/fs-extra
 ```
 
-<a name="Project+resolveScriptsBin"></a>
-
-### project.resolveScriptsBin([options], [cwd]) ⇒ <code>string</code> \| <code>undefined</code>
-
-<p>Finds and returns path to module's binary. (Module which requires this library)</p>
-
-**Kind**: instance method of [<code>Project</code>](#Project)  
-**Returns**: <code>string</code> \| <code>undefined</code> - <ul>
-
-<li>Path to parent module's binary.</li>
-</ul>  
-
-| Param     | Type                | Default                                | Description                      |
-| --------- | ------------------- | -------------------------------------- | -------------------------------- |
-| [options] | <code>Object</code> |                                        | <p>Options.</p>                  |
-| [cwd]     | <code>string</code> | <code>&quot;process.cwd()&quot;</code> | <p>Current working directory</p> |
-
-**Example**
-
-```js
-project.resolveScriptsBin(); // my-scripts (executable of this libraray)
-```
-
 <a name="Project+bin"></a>
 
 ### project.bin(executable) ⇒ <code>string</code>
 
-<p>Returns relative path to cwd of given executable located in project's <code>node_modules/.bin</code>.</p>
+<p>Returns relative path to given executable located in project's <code>node_modules/.bin</code>.</p>
 
 **Kind**: instance method of [<code>Project</code>](#Project)  
 **Returns**: <code>string</code> - <ul>
@@ -653,11 +630,44 @@ project.resolveScriptsBin(); // my-scripts (executable of this libraray)
 | ---------- | ------------------- | ----------------------------- |
 | executable | <code>string</code> | <p>Name of the executable</p> |
 
+<a name="Project+resolveScriptsBin"></a>
+
+### project.resolveScriptsBin([options], [executable], [cwd]) ⇒ <code>string</code> \| <code>undefined</code>
+
+<p>Finds and returns path to module's binary. (Module which requires this library)</p>
+
+**Kind**: instance method of [<code>Project</code>](#Project)  
+**Returns**: <code>string</code> \| <code>undefined</code> - <ul>
+
+<li>Path to parent module's binary.</li>
+</ul>  
+
+| Param        | Type                | Default                                | Description                      |
+| ------------ | ------------------- | -------------------------------------- | -------------------------------- |
+| [options]    | <code>Object</code> |                                        | <p>Options.</p>                  |
+| [executable] | <code>string</code> |                                        | <p>Executable name.</p>          |
+| [cwd]        | <code>string</code> | <code>&quot;process.cwd()&quot;</code> | <p>Current working directory</p> |
+
+**Example**
+
+```js
+project.resolveScriptsBin(); // my-scripts (executable of this libraray)
+```
+
 <a name="Project+resolveBin"></a>
 
 ### project.resolveBin(modName, [options], [executable], [cwd]) ⇒ <code>string</code>
 
-<p>Finds and returns path of given command.</p>
+<p>Finds and returns path of given command, trying to following steps:</p>
+<ol>
+<li>If it is a command defined in path, returns it's path.</li>
+<li>Searches if given node module is installed.
+2.a. If executable is given, looks <code>bin[executable]</code> in module's package.json.
+2.b. If no executable is given, looks <code>bin[module name]</code> in module's package.json.
+2.c. If found returns it's path.</li>
+<li>Throws error.
+module name is used by default.</li>
+</ol>
 
 **Kind**: instance method of [<code>Project</code>](#Project)  
 **Returns**: <code>string</code> - <ul>
@@ -666,7 +676,7 @@ project.resolveScriptsBin(); // my-scripts (executable of this libraray)
 </ul>  
 **Throws**:
 
-* <code>Error</code> <ul>
+* <code>VError</code> <ul>
   <li>Throws error no binary cannot be found.</li>
   </ul>
 
@@ -676,6 +686,14 @@ project.resolveScriptsBin(); // my-scripts (executable of this libraray)
 | [options]    | <code>Object</code> |                                        | <p>Options.</p>                                   |
 | [executable] | <code>string</code> | <code>&quot;param.modName&quot;</code> | <p>Executable name. (Defaults to module name)</p> |
 | [cwd]        | <code>string</code> | <code>&quot;process.cwd()&quot;</code> | <p>Current working directory</p>                  |
+
+**Example**
+
+```js
+project.resolveBin("typescript", { executable: "tsc" }); // Searches typescript module, looks `bin.tsc` in package.json and returns it's path.
+project.resolveBin("tsc"); // If `tsc` is defined in PATH, returns `tsc`s path, otherwise searches "tsc" module, which returns no result and throws error.
+project.resolveBin("some-cmd"); // Searches "some-cmd" module and
+```
 
 <a name="Project+fromModuleRoot"></a>
 

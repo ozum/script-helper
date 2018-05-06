@@ -153,6 +153,15 @@ describe("project", () => {
   });
 
   describe("resolveBin", () => {
+    it("should return path of binary if it has entry in bin same with module name among others.", () => {
+      expect(projects.ts.resolveBin("js-beautify")).toBe("./node_modules/js-beautify/js/bin/js-beautify.js");
+    });
+
+    it("should return binary name if it is path.", () => {
+      expect(installedProjects.ts.resolveBin("echo-cli")).toBe("echo-cli");
+      expect(projects.ts.resolveBin("echo-cli")).toBe("echo-cli");
+    });
+
     it("should return path of binary", () => {
       const installedBin = installedProjects.ts.resolveBin("js-beautify", { cwd: paths.projects.ts.install });
       // Real installation
@@ -168,6 +177,18 @@ describe("project", () => {
       expect(installedBin).toBe("./node_modules/esprima/bin/esparse.js");
       // For Istanbul coverage
       expect(projects.ts.resolveBin("esprima", { executable: "esparse" })).toBe("./node_modules/esprima/bin/esparse.js");
+    });
+
+    it("should throw if module not found", () => {
+      expect(() => projects.ts.resolveBin("not-exists")).toThrow('Cannot resolve bin: "not-exists"');
+    });
+
+    it("should throw if bin not found in module", () => {
+      expect(() => projects.ts.resolveBin("js-beautify", { executable: "not-exists" })).toThrow('There is no "bin.not-exists"');
+    });
+
+    it("should throw if bin not found in module not same with module name", () => {
+      expect(() => projects.ts.resolveBin("typescript")).toThrow('There is no "bin.typescript"');
     });
   });
 
