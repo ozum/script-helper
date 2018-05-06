@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="0.5.4"></a>
+
+## [0.5.4](https://github.com/ozum/script-helper/compare/v0.5.3...v0.5.4) (2018-05-06)
+
+### Reverts
+
+* do not replace user name from package name ([2af8390](https://github.com/ozum/script-helper/commit/2af8390))
+
 <a name="0.5.3"></a>
 
 ## [0.5.3](https://github.com/ozum/script-helper/compare/v0.5.2...v0.5.3) (2018-05-04)
