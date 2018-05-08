@@ -3,7 +3,6 @@ import { getModuleRoot, getProjectPackage } from "./project-util";
 
 describe("getModuleRoot() function", () => {
   it("should throw using stack when not in a real installation", () => {
-    const previous = process.cwd();
     expect(() => getModuleRoot()).toThrow("Cannot get module root");
   });
 });

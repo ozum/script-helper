@@ -43,7 +43,7 @@ export function getModuleRoot(): string {
   if (!targetStack) {
     throw new VError("Cannot get module root.");
   } else {
-    return readPkgUp.sync({ cwd: targetStack.getFileName() }).path;
+    return path.dirname(readPkgUp.sync({ cwd: targetStack.getFileName() }).path);
   }
 }
 
@@ -64,7 +64,7 @@ export function getProjectPackage(moduleRoot: string, modulePkg: { [key: string]
     }
   }
   /* istanbul ignore next */
-  return { pkg: pkg || modulePkg, root: path.dirname(pkgPath || moduleRoot) };
+  return { pkg: pkg || modulePkg, root: pkgPath ? path.dirname(pkgPath) : moduleRoot };
 }
 
 /* istanbul ignore next */
