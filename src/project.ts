@@ -1,7 +1,7 @@
 import arrify from "arrify";
 import cosmiconfig from "cosmiconfig";
 import spawn from "cross-spawn";
-import fs from "fs-extra";
+import fs, { readJSONSync } from "fs-extra";
 import { InternalDataInterface } from "internal-data";
 import pickBy from "lodash.pickby";
 import path from "path";
@@ -12,7 +12,7 @@ import which from "which";
 import managePath from "manage-path";
 import glob from "glob";
 import ScriptKit from "./script-kit";
-import { findModuleRoot, getPackageAndDir, listScripts } from "./project-util";
+import { listScripts, safeName, getModuleRoot, getProjectPackage } from "./project-util";
 import { Script, Executable, ScriptResult, SpawnOptions } from "./@types";
 
 type LogLevel = "none" | "error" | "warn" | "info" | "debug" | "silly";
@@ -62,7 +62,7 @@ export default class Project extends ResettableFile {
     track = true,
     sortPackageKeys = ["scripts"],
     logLevel = debug ? "debug" : "info",
-    moduleRoot = findModuleRoot(),
+    moduleRoot = getModuleRoot(),
     cwd,
     logger,
   }: {
@@ -76,11 +76,12 @@ export default class Project extends ResettableFile {
     logger?: Logger;
   } = {}) {
     try {
-      const [packageObject, root] = getPackageAndDir({ cwd });
-      const name = packageObject.name;
-      const moduleName = fs.readJsonSync(path.join(moduleRoot, "package.json")).name;
-      const registryFile = path.join(root, `${name}-registry.json`);
-      const { config = {}, filePath: configFile = undefined } = cosmiconfig(moduleName, { sync: true }).load(root) || {};
+      const modulePkg = fs.readJSONSync(path.join(moduleRoot, "package.json"));
+      const { pkg: projectPkg, root: projectRoot } = getProjectPackage(moduleRoot, modulePkg);
+      const name = projectPkg.name;
+      const moduleName = modulePkg.name;
+      const registryFile = path.join(projectRoot, `${safeName(name)}-registry.json`);
+      const { config = {}, filePath: configFile = undefined } = cosmiconfig(safeName(moduleName), { sync: true }).load(projectRoot) || {};
       super(registryFile, { track, logLevel, logger, sourceRoot: moduleRoot });
       internalData.set(this, { name, moduleName, configFile, config, debug, filesDir });
       this.getDataObjectSync("package.json", { format: "json", throwNotExists: true, sortKeys: sortPackageKeys });
@@ -96,12 +97,24 @@ export default class Project extends ResettableFile {
   }
 
   /**
-   * Module name which provides configuration services to project using this library.
+   * Project name which uses scripts module.
    * @readonly
    * @type {string}
    */
   get name() {
     return internalData.get(this).name;
+  }
+
+  /**
+   * Safe project name, which "@" and "/" characters names are replaced.
+   * @readonly
+   * @type {string}
+   * @example
+   * const name = project.name(); // @microsoft/typescript
+   * const safeName = project.safeName(); // microsoft-typescript
+   */
+  get safeName() {
+    return safeName(this.name);
   }
 
   /**
@@ -111,6 +124,18 @@ export default class Project extends ResettableFile {
    */
   get moduleName() {
     return internalData.get(this).moduleName;
+  }
+
+  /**
+   * Safe module name, which "@" and "/" characters names are replaced.
+   * @readonly
+   * @type {string}
+   * @example
+   * const name = project.moduleName(); // @user/my-scripts
+   * const safeName = project.safeModuleName(); // user-my-scripts
+   */
+  get safeModuleName() {
+    return safeName(this.moduleName);
   }
 
   /**
@@ -231,9 +256,9 @@ export default class Project extends ResettableFile {
    * project.resolveScriptsBin(); // my-scripts (executable of this libraray)
    */
   resolveScriptsBin({ executable = "", cwd = process.cwd() } = {}): string | undefined {
+    /* istanbul ignore next */
     if (this.package.get("name") === this.moduleName) {
       const module = require.resolve("./");
-      /* istanbul ignore next */
       return module ? module.replace(cwd + path.sep, "." + path.sep) : undefined;
     }
     return this.resolveBin(this.moduleName, { executable, cwd });

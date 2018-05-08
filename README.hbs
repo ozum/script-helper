@@ -200,6 +200,8 @@ or
 Your scripts module (i.e. `my-scripts`) has builtin [cosmiconfig](https://www.npmjs.com/package/cosmiconfig) support. If user puts a cosmiconfig compatibale configuration in npm project,
 you can access configration via `project.config()` method in your script functions.
 
+If script module contains user names such as `@microsoft/typescript`, cosmiconfig name is converted to dashed version: `microsoft-typescript`.
+
 By default you can design your own configuration schema. `script-helper` provides some defaults and related methods, as described below:
 
 |Key|Type|Method|Description|

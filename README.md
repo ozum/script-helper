@@ -36,7 +36,9 @@ Helper for creating and maintaining boilerplates, configurations and script modu
   * [Project](#project)
     * [new Project([options])](#new-projectoptions)
     * [project.name : <code>string</code>](#projectname--codestringcode)
+    * [project.safeName : <code>string</code>](#projectsafename--codestringcode)
     * [project.moduleName : <code>string</code>](#projectmodulename--codestringcode)
+    * [project.safeModuleName : <code>string</code>](#projectsafemodulename--codestringcode)
     * [project.moduleRoot : <code>string</code>](#projectmoduleroot--codestringcode)
     * [project.config : <code>Object</code>](#projectconfig--codeobjectcode)
     * [project.package : <code>DataObject</code>](#projectpackage--codedataobjectcode)
@@ -299,6 +301,8 @@ or
 Your scripts module (i.e. `my-scripts`) has builtin [cosmiconfig](https://www.npmjs.com/package/cosmiconfig) support. If user puts a cosmiconfig compatibale configuration in npm project,
 you can access configration via `project.config()` method in your script functions.
 
+If script module contains user names such as `@microsoft/typescript`, cosmiconfig name is converted to dashed version: `microsoft-typescript`.
+
 By default you can design your own configuration schema. `script-helper` provides some defaults and related methods, as described below:
 
 | Key      | Type             | Method                 | Description              |
@@ -407,7 +411,9 @@ Also provides <code>reset()</code> method which reverses all modifications made 
 * [Project](#Project)
   * [new Project([options])](#new_Project_new)
   * [.name](#Project+name) : <code>string</code>
+  * [.safeName](#Project+safeName) : <code>string</code>
   * [.moduleName](#Project+moduleName) : <code>string</code>
+  * [.safeModuleName](#Project+safeModuleName) : <code>string</code>
   * [.moduleRoot](#Project+moduleRoot) : <code>string</code>
   * [.config](#Project+config) : <code>Object</code>
   * [.package](#Project+package) : [<code>DataObject</code>](#DataObject)
@@ -477,10 +483,25 @@ Also provides <code>reset()</code> method which reverses all modifications made 
 
 ### project.name : <code>string</code>
 
-<p>Module name which provides configuration services to project using this library.</p>
+<p>Project name which uses scripts module.</p>
 
 **Kind**: instance property of [<code>Project</code>](#Project)  
 **Read only**: true  
+<a name="Project+safeName"></a>
+
+### project.safeName : <code>string</code>
+
+<p>Safe project name, which &quot;@&quot; and &quot;/&quot; characters names are replaced.</p>
+
+**Kind**: instance property of [<code>Project</code>](#Project)  
+**Read only**: true  
+**Example**
+
+```js
+const name = project.name(); // @microsoft/typescript
+const safeName = project.safeName(); // microsoft-typescript
+```
+
 <a name="Project+moduleName"></a>
 
 ### project.moduleName : <code>string</code>
@@ -489,6 +510,21 @@ Also provides <code>reset()</code> method which reverses all modifications made 
 
 **Kind**: instance property of [<code>Project</code>](#Project)  
 **Read only**: true  
+<a name="Project+safeModuleName"></a>
+
+### project.safeModuleName : <code>string</code>
+
+<p>Safe module name, which &quot;@&quot; and &quot;/&quot; characters names are replaced.</p>
+
+**Kind**: instance property of [<code>Project</code>](#Project)  
+**Read only**: true  
+**Example**
+
+```js
+const name = project.moduleName(); // @user/my-scripts
+const safeName = project.safeModuleName(); // user-my-scripts
+```
+
 <a name="Project+moduleRoot"></a>
 
 ### project.moduleRoot : <code>string</code>

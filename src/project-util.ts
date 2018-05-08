@@ -4,111 +4,76 @@ import { VError } from "verror";
 import readPkgUp from "read-pkg-up";
 import { Format, Data, Path } from "resettable-file";
 import Project from "./project";
+import { replaceArgumentName } from ".";
 
 const npmLifecycleEventUp: { [key: string]: number } = {
   preinstall: 2,
   postinstall: 1,
 };
 
-// function findParentModuleOut(
-//   filePath,
-//   func = () => true,
-//   maxDepth = 20
-// ) {
-//   console.log(require("util").inspect(require.main, { depth: 12 }));
-//   const targetRoot = path.dirname(readPkgUp.sync({ cwd: filePath }).path);
-//   const predicate = (candidate) => !path.dirname(candidate.filename).startsWith(targetRoot) && func(candidate);
-
-//   return findParentModule(filePath, predicate, maxDepth);
-// }
-
-// function findParentModule(
-//   filePath,
-//   func,
-//   maxDepth = 20,
-//   current = require.main,
-//   depth = 0
-// ) {
-//   if (current.filename === filePath) {
-//     return { module: current };
-//   }
-
-//   for (let i = 0; i < current.children.length && depth < maxDepth; i++) {
-//     const found = findParentModule(filePath, func, maxDepth, current.children[i], depth + 1) || {};
-
-//     if (!( found.target || found.module )) {
-//       continue;
-//     }
-
-//     const result = found.target ? found : (func(found.module) ? { target: found.module } : { module: current.parent });
-//     return current.parent ? result : result.target.filename;
-//   }
-// }
-
 /**
- * Returns modules root directory. It is possible to use `stacktrace` or `process.cwd` to find module path.
- * Stacktrace is slow but works independently where it is called. cwd works faster but does not work outside of
- * project cwd such as test scripts.
- * @param   {Object}  [options]                 - Options
- * @param   {boolean} [options.useStack=true]   - Whether to use stacktrace to find module root (slow).
- * @returns {string}                            - Module root directory.
+ * Returns callsites from the V8 stack trace API
+ * @return {*}    - Callsites
  * @private
  */
-export function findModuleRoot({ useStack = true } = {}): string {
-  // see https://code.google.com/p/v8/wiki/JavaScriptStackTraceApi
-  // İlk denemede şunu kullandım: readPkgUp.sync({ cwd: require!.main!.filename }); Proje dışında bir cwd'den çağrılırsa yanlış oluyor.
-  if (useStack) {
-    const myRoot = path.dirname(readPkgUp.sync({ cwd: __dirname }).path);
-    const origPrepareStackTrace = Error.prepareStackTrace;
-    Error.prepareStackTrace = (_, stack) => stack;
-    const stack = (new Error().stack as any) as Array<any>;
-    Error.prepareStackTrace = origPrepareStackTrace;
-    const targetStack = stack.find(
-      e => e.getFileName() && !e.getFileName().startsWith("internal") && !path.dirname(e.getFileName()).startsWith(myRoot),
-    );
-
-    /* istanbul ignore else */
-    if (!targetStack) {
-      throw new VError("Cannot find module root");
-    }
-    /* istanbul ignore next */
-    return path.dirname(readPkgUp.sync({ cwd: targetStack.getFileName() }).path);
+function getStackTrace(): Array<any> {
+  const old = Error.prepareStackTrace;
+  Error.prepareStackTrace = (_, stack) => stack;
+  const stack = (new Error().stack as any) as Array<any>;
+  Error.prepareStackTrace = old;
+  /* istanbul ignore next */
+  if (!stack) {
+    throw new VError("No stack trace available. Probably this is top most module.");
   }
-
-  return readPkgUp.sync({ cwd: require!.main!.filename }).path;
+  return stack.slice(1);
 }
 
 /**
- * Starting given level up from `cwd` and looking up further, returns first package.json data object and path of directory which contains that packagage.json.
- * @param   {boolean}               [useStack=0]  - Whether to use stack trace to find package. (Stack is slow)
- * @param   {number}                [level=0]     - Up level to start from `cwd`.
- * @returns {{0: Object, 1:string}}               - Array of package.json as first element, path or project root as second element.
- * @throws  {VError}                              - Throws if no package.json file found.
+ * Returns script module's package.json path and data.
+ * @returns {{ path: string, pkg: Object }} - Module's package.json path and data.
  * @private
  */
-export function getPackageAndDir({ useStack = true, level = 0, cwd }: { useStack?: boolean; level?: number; cwd?: string } = {}): [
-  Data,
-  string
-] {
-  // cwd according to npm lifecycle, because cwd has different values according to lifecycle event.
-  // preinstall cwd: project/node_modules/moe-scripts (Module which requires this)
-  // postinstall cwd: project (Project)
-  try {
-    const up = "..".repeat(npmLifecycleEventUp[process.env.npm_lifecycle_event!] || level);
-    const startCwd = cwd ? fs.realpathSync(path.join(cwd, up)) : path.join(findModuleRoot({ useStack }), "..");
-    const { pkg, path: pkgPath }: { pkg: object; path: string } = readPkgUp.sync({ cwd: startCwd });
+export function getModuleRoot(): string {
+  const root = path.dirname(readPkgUp.sync({ cwd: __dirname }).path);
+  const targetStack = getStackTrace().find(
+    e => e.getFileName() && !e.getFileName().startsWith("internal") && !path.dirname(e.getFileName()).startsWith(root),
+  );
 
-    if (!pkgPath) {
-      throw new VError(`Project directory cannot be found in cwd: ${startCwd}`);
-    }
-
-    return [pkg, path.dirname(pkgPath)];
-  } catch (e) {
-    throw new VError(e, "Cannot find package.json and project directory.");
+  /* istanbul ignore else */
+  if (!targetStack) {
+    throw new VError("Cannot get module root.");
+  } else {
+    return readPkgUp.sync({ cwd: targetStack.getFileName() }).path;
   }
+}
+
+/**
+ * Returns root path and package.json data of project module. If module and project are same, returns module's path and data.
+ * @param   {string} moduleRoot             - Module root's path.
+ * @param   {Object} modulePkg              - Module roots package.json data.
+ * @returns {{ path: string, pkg: Object }} - Parent module's package.json path and data.
+ * @private
+ */
+export function getProjectPackage(moduleRoot: string, modulePkg: { [key: string]: any }): { root: string; pkg: { [key: string]: any } } {
+  const { pkg, path: pkgPath } = readPkgUp.sync({ cwd: path.join(moduleRoot, "..") });
+  if (!pkgPath) {
+    const { pkg: currentPkg, path: currentPath } = readPkgUp.sync({ cwd: path.join(moduleRoot) });
+    /* istanbul ignore else */
+    if (!currentPkg || currentPkg.name !== modulePkg.name) {
+      throw new VError("Cannot find project root.");
+    }
+  }
+  /* istanbul ignore next */
+  return { pkg: pkg || modulePkg, root: path.dirname(pkgPath || moduleRoot) };
 }
 
 /* istanbul ignore next */
+/**
+ * Prints given script names to console.
+ * @param   {Array.<string>}  scriptNames  - List of script names.
+ * @returns {void}
+ * @private
+ */
 export function listScripts(scriptNames: Array<string>) {
   const [executor, ignoredBin, script, ...args] = process.argv;
   // `glob.sync` returns paths with unix style path separators even on Windows.
@@ -119,4 +84,14 @@ export function listScripts(scriptNames: Array<string>) {
   message += `Options:\n`;
   message += `  All options depend on the script and args you pass will be forwarded to the respective tool that's being run under the hood.`;
   console.log(`\n${message.trim()}\n`);
+}
+
+/**
+ * Replcaes "@" and "/" characters from given string. Useful for npm packages whose names contain user name such as @microsoft/typescript
+ * @param   {string} name - Name to be make safe.
+ * @returns {string}      - Safe name
+ * @private
+ */
+export function safeName(name: string): string {
+  return name.replace("@", "").replace("/", "-");
 }

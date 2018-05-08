@@ -19,7 +19,7 @@ let installedProjects: { [key in ProjectName]?: Project };
 
 beforeAll(async () => {
   try {
-    await installProjects({ justUpdate: false, build: true });
+    await installProjects({ justUpdate: false, build: false });
     projects = {
       ts: getProject("ts"),
       babel: getProject("babel", { logLevel: "info" }),
@@ -42,14 +42,25 @@ afterAll(async () => {
   }
 });
 
+// describe("project", () => {
+//   it("should have name", () => {
+//     console.log(projects.ts.name);
+//   });
+// });
+
 describe("project", () => {
   it("should throw for wrong project", () => {
-    expect(() => new Project()).toThrow("Cannot find module root");
+    expect(() => new Project()).toThrow("Cannot get module root.");
   });
 
   it("should have name attribute", () => {
     expect(projects.ts.name).toBe("project-module-ts");
     expect(installedProjects.ts.name).toBe("project-module-ts");
+  });
+
+  it("should have safeName attribute", () => {
+    expect(projects.ts.safeName).toBe("project-module-ts");
+    expect(installedProjects.ts.safeName).toBe("project-module-ts");
   });
 
   it("should have inherited root attribute", () => {
@@ -60,6 +71,11 @@ describe("project", () => {
   it("should have moduleName attribute", () => {
     expect(projects.ts.moduleName).toBe("scripts-module");
     expect(installedProjects.ts.moduleName).toBe("scripts-module");
+  });
+
+  it("should have safeModuleName attribute", () => {
+    expect(projects.ts.safeModuleName).toBe("scripts-module");
+    expect(installedProjects.ts.safeModuleName).toBe("scripts-module");
   });
 
   it("should have moduleRoot attribute", () => {
@@ -143,7 +159,7 @@ describe("project", () => {
 
     it("should resolve scripts binary if script module itself is also project", () => {
       const selfProject = new Project({ cwd: paths.scriptsSource, moduleRoot: paths.scriptsSource, debug: true, logger: stubLogger });
-      expect(selfProject.resolveScriptsBin()).toBe("./src/index.ts"); // For coverage
+      expect(selfProject.resolveScriptsBin()).toBe("./src/__test_supplements__/npm/scripts-module/lib/index.js"); // For coverage
     });
   });
 
@@ -154,7 +170,7 @@ describe("project", () => {
 
   describe("resolveBin", () => {
     it("should return path of binary if it has entry in bin same with module name among others.", () => {
-      expect(projects.ts.resolveBin("js-beautify")).toBe("./node_modules/js-beautify/js/bin/js-beautify.js");
+      expect(projects.ts.resolveBin("js-beautify")).toBe("js-beautify");
     });
 
     it("should return binary name if it is path.", () => {
@@ -167,8 +183,8 @@ describe("project", () => {
       // Real installation
       expect(installedBin).toBe("./node_modules/js-beautify/js/bin/js-beautify.js");
       // For Istanbul coverage
-      expect(projects.ts.resolveBin("js-beautify")).toBe("./node_modules/js-beautify/js/bin/js-beautify.js");
-      expect(projects.ts.resolveBin("js-beautify", { cwd: paths.source })).toBe("./node_modules/js-beautify/js/bin/js-beautify.js");
+      expect(projects.ts.resolveBin("js-beautify")).toBe("js-beautify");
+      expect(projects.ts.resolveBin("js-beautify", { cwd: paths.source })).toBe("js-beautify");
     });
 
     it("should return path of binary with differnt executable name", () => {
@@ -176,7 +192,7 @@ describe("project", () => {
       // Real installation
       expect(installedBin).toBe("./node_modules/esprima/bin/esparse.js");
       // For Istanbul coverage
-      expect(projects.ts.resolveBin("esprima", { executable: "esparse" })).toBe("./node_modules/esprima/bin/esparse.js");
+      expect(projects.ts.resolveBin("esprima", { executable: "esparse" })).toBe("esparse");
     });
 
     it("should throw if module not found", () => {
