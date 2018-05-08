@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="0.6.1"></a>
+
+## [0.6.1](https://github.com/ozum/script-helper/compare/v0.6.0...v0.6.1) (2018-05-08)
+
+### Bug Fixes
+
+* fix getmModuleRoot() method ([5daea4a](https://github.com/ozum/script-helper/commit/5daea4a))
+
 <a name="0.6.0"></a>
 
 # [0.6.0](https://github.com/ozum/script-helper/compare/v0.5.4...v0.6.0) (2018-05-08)
