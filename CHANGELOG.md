@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="0.6.0"></a>
+
+# [0.6.0](https://github.com/ozum/script-helper/compare/v0.5.4...v0.6.0) (2018-05-08)
+
+### Features
+
+* add safeName and safeModuleName methods ([c2485be](https://github.com/ozum/script-helper/commit/c2485be))
+
 <a name="0.5.4"></a>
 
 ## [0.5.4](https://github.com/ozum/script-helper/compare/v0.5.3...v0.5.4) (2018-05-06)
