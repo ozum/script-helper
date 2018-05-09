@@ -25,6 +25,7 @@ type LogLevel = "none" | "error" | "warn" | "info" | "debug" | "silly";
  * @property {string}         name              - Name of project.
  * @property {string}         configFile        - cosmiconfig file for module.
  * @property {Object}         config            - Configuration for module.
+ * @property {Object}         modulePackage     - Module's package.json data (read onlu)
  */
 type Internal = {
   moduleName: string;
@@ -33,6 +34,7 @@ type Internal = {
   config: { [key: string]: any };
   debug: boolean;
   filesDir: string;
+  modulePackage: { [key: string]: any };
 };
 
 const internalData: InternalDataInterface<Project, Internal> = new WeakMap();
@@ -76,14 +78,14 @@ export default class Project extends ResettableFile {
     logger?: Logger;
   } = {}) {
     try {
-      const modulePkg = fs.readJSONSync(path.join(moduleRoot, "package.json"));
-      const { pkg: projectPkg, root: projectRoot } = getProjectPackage(moduleRoot, modulePkg);
+      const modulePackage = Object.freeze(fs.readJSONSync(path.join(moduleRoot, "package.json")));
+      const { pkg: projectPkg, root: projectRoot } = getProjectPackage(moduleRoot, modulePackage);
       const name = projectPkg.name;
-      const moduleName = modulePkg.name;
+      const moduleName = modulePackage.name;
       const registryFile = path.join(projectRoot, `${safeName(name)}-registry.json`);
       const { config = {}, filePath: configFile = undefined } = cosmiconfig(safeName(moduleName), { sync: true }).load(projectRoot) || {};
       super(registryFile, { track, logLevel, logger, sourceRoot: moduleRoot });
-      internalData.set(this, { name, moduleName, configFile, config, debug, filesDir });
+      internalData.set(this, { name, moduleName, configFile, config, debug, filesDir, modulePackage });
       this.getDataObjectSync("package.json", { format: "json", throwNotExists: true, sortKeys: sortPackageKeys });
       const alterPath = managePath(process.env);
       alterPath.unshift(this.fromRoot("node_modules/.bin")); // Add .bin folder to path env. (bin like `tsc` can be called directly)
@@ -166,6 +168,15 @@ export default class Project extends ResettableFile {
   }
 
   /**
+   * Object of script module's `package.json` data. This data is read only and it's keys/values should not be changed.
+   * @readonly
+   * @type {Object}
+   */
+  get modulePackage(): { [key: string]: any } {
+    return internalData.get(this).modulePackage;
+  }
+
+  /**
    * Whether project is a compiled project via TypeScript or Babel.
    * @readonly
    * @type {boolean}
@@ -181,6 +192,20 @@ export default class Project extends ResettableFile {
    */
   get isTypeScript(): boolean {
     return this.package.has("types");
+  }
+
+  /**
+   * Command name of the module's bin. (It is simply it's bin (string) or first key of it's bin (object) in package.json)
+   * For more complex requirements, it is possible to use {@link Project.modulePackage} and do manual calculations.
+   * @readonly
+   * @type {string}
+   * @example
+   * const bin = project.moduleBin; // "my-scripts"
+   */
+  get moduleBin(): string | undefined {
+    const bin = this.modulePackage.bin;
+    /* istanbul ignore next */
+    return typeof bin === "string" ? bin : Object.keys(bin || {})[0];
   }
 
   /**

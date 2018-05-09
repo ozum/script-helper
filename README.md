@@ -42,8 +42,10 @@ Helper for creating and maintaining boilerplates, configurations and script modu
     * [project.moduleRoot : <code>string</code>](#projectmoduleroot--codestringcode)
     * [project.config : <code>Object</code>](#projectconfig--codeobjectcode)
     * [project.package : <code>DataObject</code>](#projectpackage--codedataobjectcode)
+    * [project.modulePackage : <code>Object</code>](#projectmodulepackage--codeobjectcode)
     * [project.isCompiled : <code>boolean</code>](#projectiscompiled--codebooleancode)
     * [project.isTypeScript : <code>boolean</code>](#projectistypescript--codebooleancode)
+    * [project.moduleBin : <code>string</code>](#projectmodulebin--codestringcode)
     * [project.availableScripts : <code>Array.&lt;string&gt;</code>](#projectavailablescripts--codearrayltstringgtcode)
     * [project.scriptsDir : <code>string</code>](#projectscriptsdir--codestringcode)
     * [project.configDir : <code>string</code>](#projectconfigdir--codestringcode)
@@ -423,8 +425,10 @@ Also provides <code>reset()</code> method which reverses all modifications made 
   * [.moduleRoot](#Project+moduleRoot) : <code>string</code>
   * [.config](#Project+config) : <code>Object</code>
   * [.package](#Project+package) : [<code>DataObject</code>](#DataObject)
+  * [.modulePackage](#Project+modulePackage) : <code>Object</code>
   * [.isCompiled](#Project+isCompiled) : <code>boolean</code>
   * [.isTypeScript](#Project+isTypeScript) : <code>boolean</code>
+  * [.moduleBin](#Project+moduleBin) : <code>string</code>
   * [.availableScripts](#Project+availableScripts) : <code>Array.&lt;string&gt;</code>
   * [.scriptsDir](#Project+scriptsDir) : <code>string</code>
   * [.configDir](#Project+configDir) : <code>string</code>
@@ -556,6 +560,14 @@ const safeName = project.safeModuleName(); // user-my-scripts
 
 **Kind**: instance property of [<code>Project</code>](#Project)  
 **Read only**: true  
+<a name="Project+modulePackage"></a>
+
+### project.modulePackage : <code>Object</code>
+
+<p>Object of script module's <code>package.json</code> data. This data is read only and it's keys/values should not be changed.</p>
+
+**Kind**: instance property of [<code>Project</code>](#Project)  
+**Read only**: true  
 <a name="Project+isCompiled"></a>
 
 ### project.isCompiled : <code>boolean</code>
@@ -572,6 +584,21 @@ const safeName = project.safeModuleName(); // user-my-scripts
 
 **Kind**: instance property of [<code>Project</code>](#Project)  
 **Read only**: true  
+<a name="Project+moduleBin"></a>
+
+### project.moduleBin : <code>string</code>
+
+<p>Command name of the module's bin. (It is simply it's bin (string) or first key of it's bin (object) in package.json)
+For more complex requirements, it is possible to use [Project.modulePackage](Project.modulePackage) and do manual calculations.</p>
+
+**Kind**: instance property of [<code>Project</code>](#Project)  
+**Read only**: true  
+**Example**
+
+```js
+const bin = project.moduleBin; // "my-scripts"
+```
+
 <a name="Project+availableScripts"></a>
 
 ### project.availableScripts : <code>Array.&lt;string&gt;</code>

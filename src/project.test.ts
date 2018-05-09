@@ -73,6 +73,11 @@ describe("project", () => {
     expect(installedProjects.ts.moduleName).toBe("scripts-module");
   });
 
+  it("should have moduleBin attribute", () => {
+    expect(projects.ts.moduleBin).toBe("scripts-module");
+    expect(installedProjects.ts.moduleBin).toBe("scripts-module");
+  });
+
   it("should have safeModuleName attribute", () => {
     expect(projects.ts.safeModuleName).toBe("scripts-module");
     expect(installedProjects.ts.safeModuleName).toBe("scripts-module");
@@ -81,6 +86,11 @@ describe("project", () => {
   it("should have moduleRoot attribute", () => {
     expect(projects.ts.moduleRoot).toBe(paths.projects.ts.scripts);
     expect(installedProjects.ts.moduleRoot).toBe(paths.projects.ts.scripts);
+  });
+
+  it("should have modulePackage attribute", () => {
+    expect(projects.ts.modulePackage.name).toBe("scripts-module");
+    expect(installedProjects.ts.modulePackage.name).toBe("scripts-module");
   });
 
   it("should have config attribute", () => {
