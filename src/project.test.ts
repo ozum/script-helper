@@ -19,7 +19,7 @@ let installedProjects: { [key in ProjectName]?: Project };
 
 beforeAll(async () => {
   try {
-    await installProjects({ justUpdate: false, build: false });
+    await installProjects({ justUpdate: false, build: true });
     projects = {
       ts: getProject("ts"),
       babel: getProject("babel", { logLevel: "info" }),
@@ -109,7 +109,16 @@ describe("project", () => {
   });
 
   it("should have availableScripts attribute", () => {
-    const scripts = ["create-file", "error-script", "multiple-result", "non-exporting", "post-install", "super-script", "throw-script"];
+    const scripts = [
+      "create-file",
+      "error-script",
+      "multiple-result",
+      "non-exiting",
+      "non-exporting",
+      "post-install",
+      "super-script",
+      "throw-script",
+    ];
     expect(projects.ts.availableScripts).toEqual(scripts);
     expect(installedProjects.ts.availableScripts).toEqual(scripts);
   });
@@ -374,6 +383,12 @@ describe("project", () => {
       expect(result).toBe(undefined);
     });
 
+    it("should not process.exit() from script (exit: false)", () => {
+      process.argv = ["node", "src", "non-exiting"];
+      const result = projects.ts.executeFromCLISync() as ScriptResult;
+      expect(result).toEqual({ exit: false, status: 0 });
+    });
+
     it("should return exit code from script with single result", () => {
       process.argv = ["node", "src", "create-file"];
       const exit = projects.ts.executeFromCLISync() as ScriptResult;
@@ -473,6 +488,13 @@ describe("project", () => {
       const result = projects.ts.executeSync();
       expect(result.status).toBe(0);
     });
+  });
+});
+
+describe("executeWithoutExitSync() method", () => {
+  it("should execute single command", () => {
+    const result = projects.ts.executeWithoutExitSync("echo");
+    expect(result.exit).toBe(false);
   });
 });
 

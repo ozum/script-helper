@@ -66,6 +66,7 @@ Helper for creating and maintaining boilerplates, configurations and script modu
     * [project.executeScriptFileSync(scriptFile, [args]) ⇒ <code>ScriptResult</code> \| <code>Array.&lt;ScriptResult&gt;</code>](#projectexecutescriptfilesyncscriptfile-args-%E2%87%92-codescriptresultcode-%5C-codearrayltscriptresultgtcode)
     * [project.hasScriptSync(scriptFile) ⇒ <code>string</code> \| <code>undefined</code>](#projecthasscriptsyncscriptfile-%E2%87%92-codestringcode-%5C-codeundefinedcode)
     * [project.executeSync(...executables) ⇒ <code>ScriptResult</code>](#projectexecutesyncexecutables-%E2%87%92-codescriptresultcode)
+    * [project.executeWithoutExitSync(...executables) ⇒ <code>ScriptResult</code>](#projectexecutewithoutexitsyncexecutables-%E2%87%92-codescriptresultcode)
     * [project.getConcurrentlyArgs(scripts, [options], [killOthers]) ⇒ <code>Array.&lt;string&gt;</code>](#projectgetconcurrentlyargsscripts-options-killothers-%E2%87%92-codearrayltstringgtcode)
     * [project.isOptedOut(key, [t], [f]) ⇒ <code>\*</code>](#projectisoptedoutkey-t-f-%E2%87%92-code%5Ccode)
     * [project.isOptedIn(key, [t], [f]) ⇒ <code>\*</code>](#projectisoptedinkey-t-f-%E2%87%92-code%5Ccode)
@@ -265,8 +266,13 @@ module.exports = { script };
 ### my-scripts/lib/scripts/test.js
 
 ```js
+process.env.BABEL_ENV = "test";
+process.env.NODE_ENV = "test";
+
 function script(project, args, s) {
-  // Your test related script. Do some testing stuff, execute mocha, jest or spawn something.
+  const config = []; // Some default config
+  require("jest").run(config);
+  return { status: 0, exit: false };
 }
 
 module.exports = { script };
@@ -441,6 +447,7 @@ Also provides <code>reset()</code> method which reverses all modifications made 
   * [.executeScriptFileSync(scriptFile, [args])](#Project+executeScriptFileSync) ⇒ [<code>ScriptResult</code>](#ScriptResult) \| [<code>Array.&lt;ScriptResult&gt;</code>](#ScriptResult)
   * [.hasScriptSync(scriptFile)](#Project+hasScriptSync) ⇒ <code>string</code> \| <code>undefined</code>
   * [.executeSync(...executables)](#Project+executeSync) ⇒ [<code>ScriptResult</code>](#ScriptResult)
+  * [.executeWithoutExitSync(...executables)](#Project+executeWithoutExitSync) ⇒ [<code>ScriptResult</code>](#ScriptResult)
   * [.getConcurrentlyArgs(scripts, [options], [killOthers])](#Project+getConcurrentlyArgs) ⇒ <code>Array.&lt;string&gt;</code>
   * [.isOptedOut(key, [t], [f])](#Project+isOptedOut) ⇒ <code>\*</code>
   * [.isOptedIn(key, [t], [f])](#Project+isOptedIn) ⇒ <code>\*</code>
@@ -834,8 +841,8 @@ project.resolveBin("some-cmd"); // Searches "some-cmd" module and
 
 ### project.executeFromCLISync(exit) ⇒ [<code>ScriptResult</code>](#ScriptResult) \| <code>void</code>
 
-<p>Executes script based on script name from CLI (process.argv). If <code>exit</code> is true, also exist
-from process with success (0) or failure code (1).</p>
+<p>Executes script based on script name from CLI (process.argv). If <code>exit</code> is true and there is no <code>exit: false</code> in script result objects,
+also exist from process with success (0) or failure code (1).</p>
 
 **Kind**: instance method of [<code>Project</code>](#Project)  
 **Returns**: [<code>ScriptResult</code>](#ScriptResult) \| <code>void</code> - <ul>
@@ -954,6 +961,23 @@ const result = project.executeSync(
   ["other-serial-command", ["arg"]],
 );
 ```
+
+<a name="Project+executeWithoutExitSync"></a>
+
+### project.executeWithoutExitSync(...executables) ⇒ [<code>ScriptResult</code>](#ScriptResult)
+
+<p>Same as <code>Project.executeSync()</code>, but adds <code>exit: false</code> to the result.</p>
+
+**Kind**: instance method of [<code>Project</code>](#Project)  
+**Returns**: [<code>ScriptResult</code>](#ScriptResult) - <ul>
+
+<li>Result of the executable.</li>
+</ul>  
+**See**: Project.executeSync()  
+
+| Param          | Type                                   | Description                       |
+| -------------- | -------------------------------------- | --------------------------------- |
+| ...executables | [<code>Executable</code>](#Executable) | <p>Executable or executables.</p> |
 
 <a name="Project+getConcurrentlyArgs"></a>
 
@@ -1707,6 +1731,7 @@ const binWithOptions = ["tsc", ["--strict", "--target", "ESNext"], { encoding: "
 | status            | <code>number</code>                                      | <p>Exit status code of cli command (0: success, other value: error)</p>                       |
 | [error]           | <code>Error</code>                                       | <p>Error object if execution of cli command fails.</p>                                        |
 | [previousResults] | [<code>Array.&lt;ScriptResult&gt;</code>](#ScriptResult) | <p>If more than one command is executed serially, results of prevoulsy executed commands.</p> |
+| [exit]            | <code>boolean</code>                                     | <p>Whether script should exit after finishes its job. (Default behaviour is exit/true)</p>    |
 
 <a name="Script"></a>
 

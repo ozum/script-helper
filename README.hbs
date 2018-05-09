@@ -164,9 +164,14 @@ module.exports = { script };
 
 ### my-scripts/lib/scripts/test.js
 ```js
+process.env.BABEL_ENV = "test";
+process.env.NODE_ENV = "test";
+
 function script(project, args, s) {
-  // Your test related script. Do some testing stuff, execute mocha, jest or spawn something.
-}
+  const config = []; // Some default config
+  require("jest").run(config);
+  return { status: 0, exit: false };
+};
 
 module.exports = { script };
 ```

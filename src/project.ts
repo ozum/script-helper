@@ -192,7 +192,7 @@ export default class Project extends ResettableFile {
     // `glob.sync` returns paths with unix style path separators even on Windows.
     // So we normalize it before attempting to strip out the scripts path.
     return glob
-      .sync(path.join(this.scriptsDir, "*"))
+      .sync(path.join(this.scriptsDir, "!(*.d.ts|*.map)"))
       .map(path.normalize)
       .map(script =>
         script
@@ -395,8 +395,8 @@ export default class Project extends ResettableFile {
 
   /* istanbul ignore next */
   /**
-   * Executes script based on script name from CLI (process.argv). If `exit` is true, also exist
-   * from process with success (0) or failure code (1).
+   * Executes script based on script name from CLI (process.argv). If `exit` is true and there is no `exit: false` in script result objects,
+   * also exist from process with success (0) or failure code (1).
    * @param   {boolean}           exit  - Whether to exit from process.
    * @returns {ScriptResult|void}       - Result of script
    * @throws  {VError}                  - Throws error if script throws error.
@@ -412,38 +412,44 @@ export default class Project extends ResettableFile {
    * > npm run test
    * > node_modules/.bin/my-scripts test
    */
-  executeFromCLISync(options?: { exit: true }): never | undefined;
-  executeFromCLISync(options: { exit: false }): ScriptResult | Array<ScriptResult> | undefined;
   executeFromCLISync({ exit = true } = {}): never | ScriptResult | Array<ScriptResult> | undefined {
     const [executor, ignoredBin, script, ...args] = process.argv;
     const commandMessage = `"${path.basename(ignoredBin)} ${`${script} ${args.join(" ")}`.trim()}"`;
+    let shouldExit = exit;
 
     if (!script || !this.hasScriptSync(script)) {
       script ? this.logger.error(`Script cannot be found: ${script}`) : "";
       listScripts(this.availableScripts);
-      return exit ? process.exit(1) : undefined;
+      return shouldExit ? process.exit(1) : undefined;
     }
 
     try {
+      let emitGeneralMessage = false;
+      let success = true;
       const results = this.executeScriptFileSync(script, args);
-      const success = Array.isArray(results) ? results.reduce((prev, current) => current.status === 0 && prev, true) : results.status === 0;
       const consoleErrorMessages: Error[] = [];
 
       arrify(results).forEach((result: ScriptResult) => {
+        success = result.status === 0 && success;
+        shouldExit = shouldExit && (result.exit === undefined ? true : result.exit);
         // Log as necessary
         if (result.error instanceof Error) {
           this.logger.error(result.error.message); // JS Error in result
           consoleErrorMessages.push(result.error);
         } else if (result.error) {
           this.logger.error(result.error); // Other error in result
-        } else if (!success) {
-          this.logger.error(`${script} finished with error (no error message) in command: ${commandMessage}`); // Fail without error message
+        } else if (result.status !== 0) {
+          emitGeneralMessage = true;
         }
       });
 
+      if (emitGeneralMessage) {
+        this.logger.error(`${script} finished with error in command: ${commandMessage}`); // Fail without error message
+      }
+
       this.saveSync();
       consoleErrorMessages.forEach(console.error);
-      return exit ? process.exit(success ? 0 : 1) : results;
+      return shouldExit ? process.exit(success ? 0 : 1) : results;
     } catch (e) {
       this.saveSync();
       const error = new VError(e, `Cannot finish of execution of ${commandMessage}`);
@@ -558,6 +564,18 @@ export default class Project extends ResettableFile {
     }
 
     return spawn.sync(exe, args, options);
+  }
+
+  /**
+   * Same as `Project.executeSync()`, but adds `exit: false` to the result.
+   * @param   {...Executable} executables - Executable or executables.
+   * @returns {ScriptResult}              - Result of the executable.
+   * @see Project.executeSync()
+   */
+  executeWithoutExitSync(
+    ...executables: Array<Executable | { [key: string]: Executable | null | undefined } | null | undefined>
+  ): ScriptResult {
+    return Object.assign(this.executeSync(...executables), { exit: false });
   }
 
   /**

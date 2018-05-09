@@ -25,8 +25,9 @@ export type Executable = string | [string, Array<string>] | [string, Array<strin
  * @property {number}                 status              - Exit status code of cli command (0: success, other value: error)
  * @property {Error}                  [error]             - Error object if execution of cli command fails.
  * @property {Array.<ScriptResult>}   [previousResults]   - If more than one command is executed serially, results of prevoulsy executed commands.
+ * @property {boolean}                [exit]              - Whether script should exit after finishes its job. (Default behaviour is exit/true)
  */
-export type ScriptResult = { status: number; error?: Error; previousResults?: Array<ScriptResult> };
+export type ScriptResult = { status: number; error?: Error; previousResults?: Array<ScriptResult>; exit?: boolean };
 
 /**
  * Type for script function.
