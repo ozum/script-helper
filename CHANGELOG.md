@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="0.8.0"></a>
+
+# [0.8.0](https://github.com/ozum/script-helper/compare/v0.7.0...v0.8.0) (2018-05-09)
+
+### Features
+
+* add Project.modulePackage and Project.moduleBin attributes ([28891f0](https://github.com/ozum/script-helper/commit/28891f0))
+
 <a name="0.7.0"></a>
 
 # [0.7.0](https://github.com/ozum/script-helper/compare/v0.6.3...v0.7.0) (2018-05-09)
