@@ -47,12 +47,12 @@ const internalData: InternalDataInterface<Project, Internal> = new WeakMap();
 export default class Project extends ResettableFile {
   /**
    * @param   {Object}          [options]                                 - Options
-   * @param   {boolean}         [options.filesDir=require.main.filename]  - Directory of `config` and `script` directories. Default value assumes file called from CLI resides same dir with `scripts` and `config`.
    * @param   {boolean}         [options.track]                           - Sets default tracking option for methods.
    * @param   {Array.<string>}  [options.sortPackageKeys=["scripts"]]     - Default keys to be sorted in package.json file.
    * @param   {LogLevel}        [options.logLevel="info"]                 - Sets log level. ("error", "warn", "info", "debug", "verbose", "silly")
-   * @param   {string}          [options.cwd=[project root]]              - [`Special`] Working directory of project root. (Only for special purposes, normally not necessary.)
-   * @param   {string}          [options.moduleRoot=[module root]]        - [`Special`] Root of the module using this library. (Only for special purposes, normally not necessary.)
+   * @param   {boolean}         [options.filesDir=require.main.filename]  - Directory of `config` and `script` directories. Default value assumes file called from CLI resides same dir with `scripts` and `config`.
+   * @param   {string}          [options.cwd=[project root]]              - [`For Testing`] Working directory of project root.
+   * @param   {string}          [options.moduleRoot=[module root]]        - [`For Testing`] Root of the module using this library.
    * @param   {boolean}         [options.debug=false]                     - Turns on debug mode.
    * @param   {Logger}          [options.logger]                          - A looger instance such as winston. Must implement `info`, `warn`, `error`, `verbose`, `silly`.
    * @returns {Project}                                                   - Instance
@@ -93,7 +93,6 @@ export default class Project extends ResettableFile {
         this.logger.warn("Debug mode is on");
       }
     } catch (e) {
-      /* istanbul ignore next */
       throw new VError(e, "Cannot initialize project.");
     }
   }
@@ -281,14 +280,13 @@ export default class Project extends ResettableFile {
    * project.resolveScriptsBin(); // my-scripts (executable of this libraray)
    */
   resolveScriptsBin({ executable = "", cwd = process.cwd() } = {}): string | undefined {
-    /* istanbul ignore next */
     if (this.package.get("name") === this.moduleName) {
-      const module = require.resolve("./");
-      return module ? module.replace(cwd + path.sep, "." + path.sep) : undefined;
+      return require.resolve("./").replace(cwd + path.sep, "." + path.sep);
     }
     return this.resolveBin(this.moduleName, { executable, cwd });
   }
 
+  /* istanbul ignore next */
   /**
    * Finds and returns path of given command, trying to following steps:
    * 1. If it is a command defined in path, returns it's path.
@@ -322,7 +320,7 @@ export default class Project extends ResettableFile {
       const modPkgPath = require.resolve(`${modName}/package.json`);
       const modPkgDir = path.dirname(modPkgPath!);
       const { bin } = require(modPkgPath!);
-      /* istanbul ignore next */
+
       if (typeof bin === "string" && (!executable || bin === executable)) {
         binPath = bin;
       } else if (typeof bin === "object" && executable && bin[executable]) {
@@ -335,7 +333,7 @@ export default class Project extends ResettableFile {
         throw new VError(`There is no "bin.${executable || modName}" or default (string or single entry object) "bin" in package.json.`);
       }
       const fullPathToBin = path.join(modPkgDir, binPath);
-      /* istanbul ignore if */
+
       if (fullPathToBin === pathFromWhich) {
         return executable || modName;
       }
@@ -344,7 +342,7 @@ export default class Project extends ResettableFile {
       if (pathFromWhich) {
         return executable || modName;
       }
-      /* istanbul ignore next */
+
       throw new VError(e, `Cannot resolve bin: "${executable || modName}" in "${modName}" module.`);
     }
   }
@@ -418,7 +416,6 @@ export default class Project extends ResettableFile {
     return defaultValue;
   }
 
-  /* istanbul ignore next */
   /**
    * Executes script based on script name from CLI (process.argv). If `exit` is true and there is no `exit: false` in script result objects,
    * also exist from process with success (0) or failure code (1).

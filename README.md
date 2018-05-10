@@ -121,11 +121,6 @@ Script modules help to develop npm modules without config. A very good article e
 
 With `script-helper`, it is very easy to cerate custom script modules.
 
-Test coverage is 100%, and module is tested with real `npm install` command instead of mocks. This is why initialization of test is slow.
-Since, installed files are same files but in different location, coverage report cannot be calculated from them. To overcome, a few tests are performed twice,
-both on main module and on real installation. Tests on real installation are performed to get real results, and tests on module are performed to get coverage
-report.
-
 # Inspired
 
 Inspired by [kcd-scripts](https://github.com/kentcdodds/kcd-scripts) utility functions, thanks to Kent C. Dodds and all [contributors](https://github.com/kentcdodds/kcd-scripts#contributors).
@@ -481,12 +476,12 @@ Also provides <code>reset()</code> method which reverses all modifications made 
 | Param                     | Type                              | Default                                 | Description                                                                                                                                                                                 |
 | ------------------------- | --------------------------------- | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [options]                 | <code>Object</code>               |                                         | <p>Options</p>                                                                                                                                                                              |
-| [options.filesDir]        | <code>boolean</code>              | <code>require.main.filename</code>      | <p>Directory of <code>config</code> and <code>script</code> directories. Default value assumes file called from CLI resides same dir with <code>scripts</code> and <code>config</code>.</p> |
 | [options.track]           | <code>boolean</code>              |                                         | <p>Sets default tracking option for methods.</p>                                                                                                                                            |
 | [options.sortPackageKeys] | <code>Array.&lt;string&gt;</code> | <code>[&quot;scripts&quot;]</code>      | <p>Default keys to be sorted in package.json file.</p>                                                                                                                                      |
 | [options.logLevel]        | <code>LogLevel</code>             | <code>&quot;info&quot;</code>           | <p>Sets log level. (&quot;error&quot;, &quot;warn&quot;, &quot;info&quot;, &quot;debug&quot;, &quot;verbose&quot;, &quot;silly&quot;)</p>                                                   |
-| [options.cwd]             | <code>string</code>               | <code>&quot;[project root]&quot;</code> | <p>[<code>Special</code>] Working directory of project root. (Only for special purposes, normally not necessary.)</p>                                                                       |
-| [options.moduleRoot]      | <code>string</code>               | <code>&quot;[module root]&quot;</code>  | <p>[<code>Special</code>] Root of the module using this library. (Only for special purposes, normally not necessary.)</p>                                                                   |
+| [options.filesDir]        | <code>boolean</code>              | <code>require.main.filename</code>      | <p>Directory of <code>config</code> and <code>script</code> directories. Default value assumes file called from CLI resides same dir with <code>scripts</code> and <code>config</code>.</p> |
+| [options.cwd]             | <code>string</code>               | <code>&quot;[project root]&quot;</code> | <p>[<code>For Testing</code>] Working directory of project root.</p>                                                                                                                        |
+| [options.moduleRoot]      | <code>string</code>               | <code>&quot;[module root]&quot;</code>  | <p>[<code>For Testing</code>] Root of the module using this library.</p>                                                                                                                    |
 | [options.debug]           | <code>boolean</code>              | <code>false</code>                      | <p>Turns on debug mode.</p>                                                                                                                                                                 |
 | [options.logger]          | <code>Logger</code>               |                                         | <p>A looger instance such as winston. Must implement <code>info</code>, <code>warn</code>, <code>error</code>, <code>verbose</code>, <code>silly</code>.</p>                                |
 

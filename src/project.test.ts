@@ -1,121 +1,83 @@
 import path from "path";
 import fs from "fs-extra";
-import {
-  paths,
-  getProject,
-  getFileName,
-  ProjectName,
-  getInstalledProject,
-  installProjects,
-  clear,
-  stubLogger,
-} from "./__test_supplements__/test-util";
-import { Project, ScriptKit } from "./index";
-import { VError } from "verror";
-import { ScriptResult } from "./@types";
+import { createProject, getPaths, stubLogger, clear, TARGETBASE } from "./__test_supplements__/test-helper";
+import { Project, ScriptResult } from "./index";
 
-let projects: { [key in ProjectName]?: Project };
-let installedProjects: { [key in ProjectName]?: Project };
+const TARGET = "temp-test-project";
+let projects: { ts: Project; babel: Project };
+const paths = {
+  ts: getPaths("project-module-ts", TARGET),
+  babel: getPaths("project-module-babel", TARGET),
+};
 
 beforeAll(async () => {
-  try {
-    await installProjects({ justUpdate: false, build: true });
-    projects = {
-      ts: getProject("ts"),
-      babel: getProject("babel", { logLevel: "info" }),
-    };
-    installedProjects = {
-      ts: getInstalledProject("ts"),
-      babel: getInstalledProject("babel"),
-    };
-  } catch (e) {
-    console.log(e);
-    throw e;
-  }
-}, 35000); // Set timeout. Instead of stubs, preferred module installation, which takes very long time. Be patient!
-
-afterAll(async () => {
-  try {
-    await clear();
-  } catch (e) {
-    console.log(e);
-  }
+  const projectArray = await Promise.all([createProject("project-module-ts", TARGET), createProject("project-module-babel", TARGET)]);
+  projects = { ts: projectArray[0], babel: projectArray[1] };
 });
 
-// describe("project", () => {
-//   it("should have name", () => {
-//     console.log(projects.ts.name);
-//   });
-// });
+afterAll(async () => {
+  await clear(TARGET);
+});
 
-describe("project", () => {
+describe("Project", () => {
   it("should throw for wrong project", () => {
     expect(() => new Project()).toThrow("Cannot get module root.");
   });
 
+  it("should throw for wrong module-root", () => {
+    expect(() => new Project({ moduleRoot: "non-existing" })).toThrow("Cannot initialize project");
+  });
+
   it("should have name attribute", () => {
     expect(projects.ts.name).toBe("project-module-ts");
-    expect(installedProjects.ts.name).toBe("project-module-ts");
   });
 
   it("should have safeName attribute", () => {
     expect(projects.ts.safeName).toBe("project-module-ts");
-    expect(installedProjects.ts.safeName).toBe("project-module-ts");
   });
 
   it("should have inherited root attribute", () => {
-    expect(projects.ts.root).toBe(paths.projects.ts.install);
-    expect(installedProjects.ts.root).toBe(paths.projects.ts.install);
+    expect(projects.ts.root).toBe(paths.ts.projectRoot);
   });
 
   it("should have moduleName attribute", () => {
     expect(projects.ts.moduleName).toBe("scripts-module");
-    expect(installedProjects.ts.moduleName).toBe("scripts-module");
   });
 
   it("should have moduleBin attribute", () => {
     expect(projects.ts.moduleBin).toBe("scripts-module");
-    expect(installedProjects.ts.moduleBin).toBe("scripts-module");
   });
 
   it("should have safeModuleName attribute", () => {
     expect(projects.ts.safeModuleName).toBe("scripts-module");
-    expect(installedProjects.ts.safeModuleName).toBe("scripts-module");
   });
 
   it("should have moduleRoot attribute", () => {
-    expect(projects.ts.moduleRoot).toBe(paths.projects.ts.scripts);
-    expect(installedProjects.ts.moduleRoot).toBe(paths.projects.ts.scripts);
+    expect(projects.ts.moduleRoot).toBe(paths.ts.moduleRoot);
   });
 
   it("should have modulePackage attribute", () => {
     expect(projects.ts.modulePackage.name).toBe("scripts-module");
-    expect(installedProjects.ts.modulePackage.name).toBe("scripts-module");
   });
 
   it("should have config attribute", () => {
     expect(projects.ts.config.testOption).toBe("OK");
-    expect(installedProjects.ts.config.testOption).toBe("OK");
   });
 
   it("should have package attribute", () => {
     expect(projects.ts.package.get("name")).toBe("project-module-ts");
-    expect(installedProjects.ts.package.get("name")).toBe("project-module-ts");
   });
 
   it("should have isTypeScript attribute", () => {
     expect(projects.ts.isTypeScript).toBe(true);
-    expect(installedProjects.ts.isTypeScript).toBe(true);
   });
 
   it("should have isCompiled attribute for Babel", () => {
     expect(projects.babel.isCompiled).toBe(true);
-    expect(installedProjects.babel.isCompiled).toBe(true);
   });
 
   it("should have isCompiled attribute for TypeScript", () => {
     expect(projects.ts.isCompiled).toBe(true);
-    expect(installedProjects.ts.isCompiled).toBe(true);
   });
 
   it("should have availableScripts attribute", () => {
@@ -130,61 +92,47 @@ describe("project", () => {
       "throw-script",
     ];
     expect(projects.ts.availableScripts).toEqual(scripts);
-    expect(installedProjects.ts.availableScripts).toEqual(scripts);
   });
 
   it("should have scriptsDir attribute", () => {
-    expect(projects.ts.scriptsDir).toBe(path.join(paths.projects.ts.install, "node_modules/scripts-module/lib/scripts"));
-    expect(installedProjects.ts.scriptsDir).toBe(path.join(paths.projects.ts.install, "node_modules/scripts-module/lib/scripts"));
+    expect(projects.ts.scriptsDir).toBe(path.join(paths.ts.projectRoot, "node_modules/scripts-module/lib/scripts"));
   });
 
   it("should have configDir attribute", () => {
-    expect(projects.ts.configDir).toBe(path.join(paths.projects.ts.install, "node_modules/scripts-module/lib/config"));
-    expect(installedProjects.ts.configDir).toBe(path.join(paths.projects.ts.install, "node_modules/scripts-module/lib/config"));
+    expect(projects.ts.configDir).toBe(path.join(paths.ts.projectRoot, "node_modules/scripts-module/lib/config"));
   });
 
   it("should call fromScriptsDir() method", () => {
-    expect(projects.ts.fromScriptsDir("a")).toBe(path.join(paths.projects.ts.install, "node_modules/scripts-module/lib/scripts/a"));
-    expect(installedProjects.ts.fromScriptsDir("a")).toBe(
-      path.join(paths.projects.ts.install, "node_modules/scripts-module/lib/scripts/a"),
-    );
+    expect(projects.ts.fromScriptsDir("a")).toBe(path.join(paths.ts.projectRoot, "node_modules/scripts-module/lib/scripts/a"));
   });
 
   it("should call fromConfigDir() method", () => {
-    expect(projects.ts.fromConfigDir("a")).toBe(path.join(paths.projects.ts.install, "node_modules/scripts-module/lib/config/a"));
-    expect(installedProjects.ts.fromConfigDir("a")).toBe(path.join(paths.projects.ts.install, "node_modules/scripts-module/lib/config/a"));
-  });
-
-  it("should have executed post-install script", () => {
-    expect(installedProjects.ts.readFileSync("post-install.json", { parse: true })).toEqual({
-      name: "project-module-ts",
-      moduleName: "scripts-module",
-      args: "--post_ok",
-    });
+    expect(projects.ts.fromConfigDir("a")).toBe(path.join(paths.ts.projectRoot, "node_modules/scripts-module/lib/config/a"));
   });
 
   it("should resolveModule", () => {
-    expect(projects.ts.resolveModule("fs-extra")).toBe(path.join(paths.source, "node_modules/fs-extra")); // For coverage
-    expect(installedProjects.ts.resolveModule("lodash.debounce")).toBe(
-      path.join(paths.projects.ts.install, "node_modules/lodash.debounce"),
-    ); // For real
+    expect(projects.ts.resolveModule("fs-extra")).toBe(path.join(__dirname, "../node_modules/fs-extra")); // Since this is not a real installation it returns current modules's node_modules
   });
 
   describe("resolveScriptsBin", () => {
     it("should resolve scripts binary", () => {
-      expect(projects.ts.resolveScriptsBin()).toBe("./src/__test_supplements__/npm/scripts-module/lib/index.js"); // For coverage
-      expect(installedProjects.ts.resolveScriptsBin()).toBe("./test-temp/project-module-ts/node_modules/scripts-module/lib/index.js"); // For real
+      expect(projects.ts.resolveScriptsBin({ executable: "echo-cli" })).toBe("echo-cli"); // Note: Not a realistic test
     });
 
     it("should resolve scripts binary if script module itself is also project", () => {
-      const selfProject = new Project({ cwd: paths.scriptsSource, moduleRoot: paths.scriptsSource, debug: true, logger: stubLogger });
-      expect(selfProject.resolveScriptsBin()).toBe("./src/__test_supplements__/npm/scripts-module/lib/index.js"); // For coverage
+      const selfProject = new Project({
+        cwd: path.join(__dirname, ".."),
+        moduleRoot: path.join(__dirname, ".."),
+        debug: true,
+        logger: stubLogger,
+      });
+      expect(selfProject.resolveScriptsBin()).toBe("./src/index.ts");
     });
   });
 
   it("should return bin", () => {
-    expect(projects.ts.bin("js-beautify")).toBe("./test-temp/project-module-ts/node_modules/.bin/js-beautify");
-    expect(installedProjects.ts.bin("js-beautify")).toBe("./test-temp/project-module-ts/node_modules/.bin/js-beautify");
+    const base = TARGETBASE.replace(path.join(__dirname, ".."), ".");
+    expect(projects.ts.bin("js-beautify")).toBe(`${base}/${TARGET}/project-module-ts/node_modules/.bin/js-beautify`);
   });
 
   describe("resolveBin", () => {
@@ -192,25 +140,16 @@ describe("project", () => {
       expect(projects.ts.resolveBin("js-beautify")).toBe("js-beautify");
     });
 
-    it("should return binary name if it is path.", () => {
-      expect(installedProjects.ts.resolveBin("echo-cli")).toBe("echo-cli");
+    it("should return binary name if it is in path.", () => {
       expect(projects.ts.resolveBin("echo-cli")).toBe("echo-cli");
     });
 
     it("should return path of binary", () => {
-      const installedBin = installedProjects.ts.resolveBin("js-beautify", { cwd: paths.projects.ts.install });
-      // Real installation
-      expect(installedBin).toBe("./node_modules/js-beautify/js/bin/js-beautify.js");
-      // For Istanbul coverage
       expect(projects.ts.resolveBin("js-beautify")).toBe("js-beautify");
-      expect(projects.ts.resolveBin("js-beautify", { cwd: paths.source })).toBe("js-beautify");
+      expect(projects.ts.resolveBin("js-beautify", { cwd: path.join(__dirname, "..") })).toBe("js-beautify");
     });
 
     it("should return path of binary with differnt executable name", () => {
-      const installedBin = installedProjects.ts.resolveBin("esprima", { executable: "esparse", cwd: paths.projects.ts.install });
-      // Real installation
-      expect(installedBin).toBe("./node_modules/esprima/bin/esparse.js");
-      // For Istanbul coverage
       expect(projects.ts.resolveBin("esprima", { executable: "esparse" })).toBe("esparse");
     });
 
@@ -228,58 +167,48 @@ describe("project", () => {
   });
 
   it("should call fromModuleRoot()", () => {
-    expect(projects.ts.fromModuleRoot("some/file.js")).toBe(path.join(paths.projects.ts.scripts, "some/file.js"));
-    expect(installedProjects.ts.fromModuleRoot("some/file.js")).toBe(path.join(paths.projects.ts.scripts, "some/file.js"));
+    expect(projects.ts.fromModuleRoot("some/file.js")).toBe(path.join(paths.ts.moduleRoot, "some/file.js"));
   });
 
   describe("hasAnyDep() method", () => {
     it("should return true from hasAnyDep() for existing dependency", () => {
       expect(projects.ts.hasAnyDep("dotenv")).toBe(true);
-      expect(installedProjects.ts.hasAnyDep("dotenv")).toBe(true);
     });
 
     it("should return false from hasAnyDep() for non-existing dependency", () => {
       expect(projects.ts.hasAnyDep("some-module")).toBe(false);
-      expect(installedProjects.ts.hasAnyDep("some-module")).toBe(false);
     });
 
     it("should return 1 from hasAnyDep() for existing dependency", () => {
       expect(projects.ts.hasAnyDep("dotenv", 1, 0)).toBe(1);
-      expect(installedProjects.ts.hasAnyDep("dotenv", 1, 0)).toBe(1);
     });
 
     it("should return 0 from hasAnyDep() for non-existing dependency", () => {
       expect(projects.ts.hasAnyDep("some-module", 1, 0)).toBe(0);
-      expect(installedProjects.ts.hasAnyDep("some-module", 1, 0)).toBe(0);
     });
   });
 
   it("should return true from envIsSet() for existing environment variables", () => {
     process.env.SOME_VAR = "value";
     expect(projects.ts.envIsSet("SOME_VAR")).toBe(true);
-    expect(installedProjects.ts.envIsSet("SOME_VAR")).toBe(true);
   });
 
   it("should return false from envIsSet() for non-existing environment variables", () => {
     expect(projects.ts.envIsSet("SOME_NON_EXISTING_VAR")).toBe(false);
-    expect(installedProjects.ts.envIsSet("SOME_NON_EXISTING_VAR")).toBe(false);
   });
 
   it("should return environment variable from parseEnv()", () => {
     process.env.SOME_VAR = "value";
     expect(projects.ts.parseEnv("SOME_VAR")).toBe("value");
-    expect(installedProjects.ts.parseEnv("SOME_VAR")).toBe("value");
   });
 
   it("should parse data returned from environment variable from parseEnv()", () => {
     process.env.SOME_VAR = '{"key": "value"}';
     expect(projects.ts.parseEnv("SOME_VAR")).toEqual({ key: "value" });
-    expect(installedProjects.ts.parseEnv("SOME_VAR")).toEqual({ key: "value" });
   });
 
   it("should return default environment variable from parseEnv() for non-existing variable", () => {
     expect(projects.ts.parseEnv("SOME_NON_EXISTING_VAR", "DEFAULT")).toBe("DEFAULT");
-    expect(installedProjects.ts.parseEnv("SOME_NON_EXISTING_VAR", "DEFAULT")).toBe("DEFAULT");
   });
 
   it("should getConcurrentlyArgs()", () => {
@@ -310,44 +239,43 @@ describe("project", () => {
   describe("isOptedIn() method", () => {
     it("should return true for opted in conifuration element", () => {
       expect(projects.ts.isOptedIn("a")).toBe(true);
-      expect(installedProjects.ts.isOptedIn("a")).toBe(true);
     });
 
     it("should return false for not opted in conifuration element", () => {
       expect(projects.ts.isOptedIn("not-exists")).toBe(false);
-      expect(installedProjects.ts.isOptedIn("not-exists")).toBe(false);
     });
 
     it("should return 1 for opted in conifuration element", () => {
       expect(projects.ts.isOptedIn("a", 1, 0)).toBe(1);
-      expect(installedProjects.ts.isOptedIn("a", 1, 0)).toBe(1);
     });
 
     it("should return 0 for not opted in conifuration element", () => {
       expect(projects.ts.isOptedIn("not-exists", 1, 0)).toBe(0);
-      expect(installedProjects.ts.isOptedIn("not-exists", 1, 0)).toBe(0);
     });
   });
 
   describe("isOptedOut() method", () => {
     it("should return true for opted out conifuration element", () => {
       expect(projects.ts.isOptedOut("z")).toBe(true);
-      expect(installedProjects.ts.isOptedOut("z")).toBe(true);
     });
 
     it("should return false for not opted out conifuration element", () => {
       expect(projects.ts.isOptedOut("not-exists")).toBe(false);
-      expect(installedProjects.ts.isOptedOut("not-exists")).toBe(false);
     });
 
     it("should return 1 for opted out conifuration element", () => {
       expect(projects.ts.isOptedOut("z", 1, 0)).toBe(1);
-      expect(installedProjects.ts.isOptedOut("z", 1, 0)).toBe(1);
     });
 
     it("should return 0 for not opted out conifuration element", () => {
       expect(projects.ts.isOptedOut("not-exists", 1, 0)).toBe(0);
-      expect(installedProjects.ts.isOptedOut("not-exists", 1, 0)).toBe(0);
+    });
+  });
+
+  describe("executeScriptFileSync() method", () => {
+    it("should execute script from scripts directory", () => {
+      const result = projects.ts.executeScriptFileSync("multiple-result") as Array<any>;
+      expect(result.length).toBe(2);
     });
   });
 
@@ -404,6 +332,7 @@ describe("project", () => {
       const exit = projects.ts.executeFromCLISync() as ScriptResult;
       const content = projects.ts.readFileSync("created-by-script.txt");
       expect(content).toBe("cli");
+      projects.ts.deleteFileSync("created-by-script.txt");
       expect(exit).toEqual({ exitCode: 0 });
     });
 
@@ -412,6 +341,7 @@ describe("project", () => {
       const result = projects.ts.executeFromCLISync({ exit: false }) as ScriptResult;
       const content = projects.ts.readFileSync("created-by-script.txt");
       expect(content).toBe("cli");
+      projects.ts.deleteFileSync("created-by-script.txt");
       expect(result.status).toBe(0);
     });
 
@@ -446,11 +376,11 @@ describe("project", () => {
 
   describe("hasScriptSync() method", () => {
     it("should return script name for existing scripts without script extension", () => {
-      expect(projects.ts.hasScriptSync("create-file")).toBe(path.join(paths.projects.ts.scripts, "lib/scripts/create-file.js"));
+      expect(projects.ts.hasScriptSync("create-file")).toBe(path.join(paths.ts.moduleRoot, "lib/scripts/create-file.js"));
     });
 
     it("should return script name for existing scripts with script extension", () => {
-      expect(projects.ts.hasScriptSync("create-file.js")).toBe(path.join(paths.projects.ts.scripts, "lib/scripts/create-file.js"));
+      expect(projects.ts.hasScriptSync("create-file.js")).toBe(path.join(paths.ts.moduleRoot, "lib/scripts/create-file.js"));
     });
 
     it("should return undefined for non-existing scripts", () => {
@@ -499,63 +429,11 @@ describe("project", () => {
       expect(result.status).toBe(0);
     });
   });
-});
 
-describe("executeWithoutExitSync() method", () => {
-  it("should execute single command", () => {
-    const result = projects.ts.executeWithoutExitSync("echo");
-    expect(result.exit).toBe(false);
-  });
-});
-
-describe("ScriptKit", () => {
-  let project;
-  let scriptFile;
-  let scriptKit;
-  let superScriptFile;
-
-  beforeAll(() => {
-    try {
-      project = getProject("ts");
-      scriptFile = project.hasScriptSync("multiple-result");
-      scriptKit = new ScriptKit(project, "multiple-result");
-      superScriptFile = project.hasScriptSync("super-script");
-    } catch (e) {
-      console.log(e);
-      throw e;
-    }
-  });
-
-  it("should create instance", () => {
-    expect(scriptKit instanceof ScriptKit).toBe(true);
-  });
-
-  it("should throw if script cannot be found", () => {
-    expect(() => new ScriptKit(project, "not-exists")).toThrow("cannot be found in");
-  });
-
-  it("should have dir attribute", () => {
-    expect(scriptKit.dir).toBe(path.join(paths.projects.ts.scripts, "lib/scripts"));
-  });
-
-  it("should have configDir attribute", () => {
-    expect(scriptKit.configDir).toBe(path.join(paths.projects.ts.scripts, "lib/config"));
-  });
-
-  it("should have extension attribute", () => {
-    expect(scriptKit.extension).toBe("js");
-  });
-
-  it("should have here() method", () => {
-    expect(scriptKit.here("a")).toBe(path.join(paths.projects.ts.scripts, "lib/scripts/a"));
-  });
-
-  it("should have hereRelative() method", () => {
-    expect(scriptKit.hereRelative("a")).toBe("./test-temp/project-module-ts/node_modules/scripts-module/lib/scripts/a");
-  });
-
-  it("should have executeSubScriptSync() method", () => {
-    const result = project.executeScriptFileSync("super-script");
-    expect(result).toEqual({ status: 0 });
+  describe("executeWithoutExitSync() method", () => {
+    it("should execute single command", () => {
+      const result = projects.ts.executeWithoutExitSync("echo");
+      expect(result.exit).toBe(false);
+    });
   });
 });
