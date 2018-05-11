@@ -23,6 +23,23 @@
   "license": "MIT",
   "readme": "README.md",
   "_id": "script-helper@1.0.0",
+  "scripts": {
+    "build": "moe-scripts build",
+    "build:doc": "moe-scripts doc --no-cache",
+    "commit": "moe-scripts commit",
+    "file": "f() { P=$1; P=${P/src/lib}; P=${P/.ts/.js}; tsc-watch --onSuccess \"node -r source-map-support/register ${P}\"; }; f",
+    "format": "moe-scripts format",
+    "lint": "moe-scripts lint",
+    "postbuild:doc": "rm -rf src/resettable-file",
+    "prebuild:doc": "npm run postbuild:doc && svn export https://github.com/ozum/resettable-file/trunk/src src/resettable-file && sed -i '' $'s/@classdesc/@classdesc\\\n * @private/' src/resettable-file/resettable-file.ts",
+    "prepublishOnly": "npm run build",
+    "release": "git checkout master && git pull origin master && standard-version && git push --follow-tags origin master && npm publish",
+    "squash": "BRANCH=`git rev-parse --abbrev-ref HEAD` && git checkout master && git merge --squash $BRANCH && npm run commit",
+    "test": "moe-scripts test",
+    "test:update": "moe-scripts test --updateSnapshot",
+    "validate": "moe-scripts validate",
+    "watch": "concurrently 'npm run build -- --watch' 'npm run test -- --watch' | awk '{gsub(/\\033c/,\"\") system(\"\")}1'"
+  },
   "devDependencies": {
     "@types/arrify": "^1.0.4",
     "@types/cosmiconfig": "^4.0.0",
@@ -54,20 +71,5 @@
     "lib",
     "bin",
     "@types"
-  ],
-  "scripts": {
-    "build": "moe-scripts build",
-    "build:doc": "moe-scripts doc --no-cache",
-    "commit": "moe-scripts commit",
-    "file": "f() { P=$1; P=${P/src/lib}; P=${P/.ts/.js}; tsc-watch --onSuccess \"node -r source-map-support/register ${P}\"; }; f",
-    "format": "moe-scripts format",
-    "lint": "moe-scripts lint",
-    "prepublishOnly": "npm run build",
-    "release": "git checkout master && git pull origin master && standard-version && git push --follow-tags origin master && npm publish",
-    "squash": "BRANCH=`git rev-parse --abbrev-ref HEAD` && git checkout master && git merge --squash $BRANCH && npm run commit",
-    "test": "moe-scripts test",
-    "test:update": "moe-scripts test --updateSnapshot",
-    "validate": "moe-scripts validate",
-    "watch": "concurrently 'npm run build -- --watch' 'npm run test -- --watch' | awk '{gsub(/\\033c/,\"\") system(\"\")}1'"
-  }
+  ]
 }

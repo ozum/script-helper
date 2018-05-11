@@ -18,27 +18,120 @@
     "package.json": [
       {
         "op": "test",
-        "path": "/scripts",
-        "value": {
-          "file": "f() { P=$1; P=${P/src/lib}; P=${P/.ts/.js}; tsc-watch --onSuccess \"node -r source-map-support/register ${P}\"; }; f",
-          "watch": "concurrently 'npm run build -- --watch' 'npm run test -- --watch' | awk '{gsub(/\\033c/,\"\") system(\"\")}1'",
-          "build": "moe-scripts build",
-          "build:doc": "moe-scripts doc --no-cache",
-          "test": "moe-scripts test",
-          "test:update": "moe-scripts test --updateSnapshot",
-          "lint": "moe-scripts lint",
-          "format": "moe-scripts format",
-          "validate": "moe-scripts validate",
-          "commit": "moe-scripts commit",
-          "prepublishOnly": "npm run build",
-          "squash": "BRANCH=`git rev-parse --abbrev-ref HEAD` && git checkout master && git merge --squash $BRANCH && npm run commit",
-          "release":
-            "git checkout master && git pull origin master && standard-version && git push --follow-tags origin master && npm publish"
-        }
+        "path": "/scripts/release",
+        "value": "git checkout master && git pull origin master && standard-version && git push --follow-tags origin master && npm publish"
       },
       {
         "op": "remove",
-        "path": "/scripts"
+        "path": "/scripts/release"
+      },
+      {
+        "op": "test",
+        "path": "/scripts/squash",
+        "value": "BRANCH=`git rev-parse --abbrev-ref HEAD` && git checkout master && git merge --squash $BRANCH && npm run commit"
+      },
+      {
+        "op": "remove",
+        "path": "/scripts/squash"
+      },
+      {
+        "op": "test",
+        "path": "/scripts/prepublishOnly",
+        "value": "npm run build"
+      },
+      {
+        "op": "remove",
+        "path": "/scripts/prepublishOnly"
+      },
+      {
+        "op": "test",
+        "path": "/scripts/commit",
+        "value": "moe-scripts commit"
+      },
+      {
+        "op": "remove",
+        "path": "/scripts/commit"
+      },
+      {
+        "op": "test",
+        "path": "/scripts/validate",
+        "value": "moe-scripts validate"
+      },
+      {
+        "op": "remove",
+        "path": "/scripts/validate"
+      },
+      {
+        "op": "test",
+        "path": "/scripts/format",
+        "value": "moe-scripts format"
+      },
+      {
+        "op": "remove",
+        "path": "/scripts/format"
+      },
+      {
+        "op": "test",
+        "path": "/scripts/lint",
+        "value": "moe-scripts lint"
+      },
+      {
+        "op": "remove",
+        "path": "/scripts/lint"
+      },
+      {
+        "op": "test",
+        "path": "/scripts/test:update",
+        "value": "moe-scripts test --updateSnapshot"
+      },
+      {
+        "op": "remove",
+        "path": "/scripts/test:update"
+      },
+      {
+        "op": "test",
+        "path": "/scripts/test",
+        "value": "moe-scripts test"
+      },
+      {
+        "op": "remove",
+        "path": "/scripts/test"
+      },
+      {
+        "op": "test",
+        "path": "/scripts/build:doc",
+        "value": "moe-scripts doc --no-cache"
+      },
+      {
+        "op": "remove",
+        "path": "/scripts/build:doc"
+      },
+      {
+        "op": "test",
+        "path": "/scripts/build",
+        "value": "moe-scripts build"
+      },
+      {
+        "op": "remove",
+        "path": "/scripts/build"
+      },
+      {
+        "op": "test",
+        "path": "/scripts/watch",
+        "value": "concurrently 'npm run build -- --watch' 'npm run test -- --watch' | awk '{gsub(/\\033c/,\"\") system(\"\")}1'"
+      },
+      {
+        "op": "remove",
+        "path": "/scripts/watch"
+      },
+      {
+        "op": "test",
+        "path": "/scripts/file",
+        "value": "f() { P=$1; P=${P/src/lib}; P=${P/.ts/.js}; tsc-watch --onSuccess \"node -r source-map-support/register ${P}\"; }; f"
+      },
+      {
+        "op": "remove",
+        "path": "/scripts/file"
       },
       {
         "op": "test",
