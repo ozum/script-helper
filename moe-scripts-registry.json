@@ -39,6 +39,15 @@
       {
         "op": "remove",
         "path": "/scripts"
+      },
+      {
+        "op": "test",
+        "path": "/files",
+        "value": ["lib", "bin", "@types"]
+      },
+      {
+        "op": "remove",
+        "path": "/files"
       }
     ]
   }

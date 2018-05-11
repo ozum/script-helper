@@ -9,11 +9,6 @@
   ],
   "main": "lib/index",
   "types": "lib/index",
-  "files": [
-    "lib",
-    "bin",
-    "@types"
-  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ozum/script-helper.git"
@@ -29,32 +24,37 @@
   "readme": "README.md",
   "_id": "script-helper@1.0.0",
   "devDependencies": {
-    "@types/arrify": "^1.0.3",
+    "@types/arrify": "^1.0.4",
     "@types/cosmiconfig": "^4.0.0",
     "@types/cross-spawn": "^6.0.0",
     "@types/fs-extra": "^5.0.2",
     "@types/glob": "^5.0.35",
     "@types/lodash.pickby": "^4.6.3",
-    "@types/node": "^10.0.6",
+    "@types/node": "^10.0.8",
     "@types/read-pkg-up": "^3.0.1",
     "@types/verror": "^1.10.3",
     "@types/which": "^1.3.1",
     "internal-data": "^0.3.1",
-    "moe-scripts": "^0.1.8"
+    "moe-scripts": "^0.1.9"
   },
   "dependencies": {
     "arrify": "^1.0.1",
     "cosmiconfig": "^4.0.0",
     "cross-spawn": "^6.0.5",
-    "fs-extra": "^6.0.0",
+    "fs-extra": "^6.0.1",
     "glob": "^7.1.2",
     "lodash.pickby": "^4.6.0",
     "manage-path": "^2.0.0",
     "read-pkg-up": "^3.0.0",
-    "resettable-file": "^0.3.4",
+    "resettable-file": "^0.3.6",
     "verror": "^1.10.0",
     "which": "^1.3.0"
   },
+  "files": [
+    "lib",
+    "bin",
+    "@types"
+  ],
   "scripts": {
     "build": "moe-scripts build",
     "build:doc": "moe-scripts doc --no-cache",
