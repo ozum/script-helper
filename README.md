@@ -99,7 +99,7 @@ Helper for creating and maintaining boilerplates, configurations and script modu
     * [dataObject.has(props, [t], [f]) ⇒ <code>\*</code>](#dataobjecthasprops-t-f-%E2%87%92-code%5Ccode)
     * [dataObject.hasSubProp(prop, subProps, [t], [f]) ⇒ <code>\*</code>](#dataobjecthassubpropprop-subprops-t-f-%E2%87%92-code%5Ccode)
     * [dataObject.get(path) ⇒ <code>\*</code>](#dataobjectgetpath-%E2%87%92-code%5Ccode)
-    * [dataObject.set(path, value) ⇒ <code>this</code>](#dataobjectsetpath-value-%E2%87%92-codethiscode)
+    * [dataObject.set(path, value, [options]) ⇒ <code>this</code>](#dataobjectsetpath-value-options-%E2%87%92-codethiscode)
     * [dataObject.setObject(data, [options]) ⇒ <code>this</code>](#dataobjectsetobjectdata-options-%E2%87%92-codethiscode)
     * [dataObject.remove(path, [options]) ⇒ <code>this</code>](#dataobjectremovepath-options-%E2%87%92-codethiscode)
     * [dataObject.reset() ⇒ <code>Array.&lt;Operation&gt;</code>](#dataobjectreset-%E2%87%92-codearrayltoperationgtcode)
@@ -1490,7 +1490,7 @@ project.createDir("path/to/dir"); // Created "path", "to" and "dir" as necessary
   * [.has(props, [t], [f])](#DataObject+has) ⇒ <code>\*</code>
   * [.hasSubProp(prop, subProps, [t], [f])](#DataObject+hasSubProp) ⇒ <code>\*</code>
   * [.get(path)](#DataObject+get) ⇒ <code>\*</code>
-  * [.set(path, value)](#DataObject+set) ⇒ <code>this</code>
+  * [.set(path, value, [options])](#DataObject+set) ⇒ <code>this</code>
   * [.setObject(data, [options])](#DataObject+setObject) ⇒ <code>this</code>
   * [.remove(path, [options])](#DataObject+remove) ⇒ <code>this</code>
   * [.reset()](#DataObject+reset) ⇒ <code>Array.&lt;Operation&gt;</code>
@@ -1614,7 +1614,7 @@ const result2 = project.hasSubProp("address.home", ["street.name", "street.no"])
 
 <a name="DataObject+set"></a>
 
-### dataObject.set(path, value) ⇒ <code>this</code>
+### dataObject.set(path, value, [options]) ⇒ <code>this</code>
 
 <p>Stores given data at given key or path. Based on force option, does not change value if it is not created automatically by this library by looking registry.
 Path may be given as chained. (i.e &quot;scripts.compile&quot;)</p>
@@ -1625,10 +1625,12 @@ Path may be given as chained. (i.e &quot;scripts.compile&quot;)</p>
 <li>Object instance.</li>
 </ul>  
 
-| Param | Type              | Description                         |
-| ----- | ----------------- | ----------------------------------- |
-| path  | <code>Path</code> | <p>Path to store data at.</p>       |
-| value | <code>\*</code>   | <p>Value to store at given key.</p> |
+| Param           | Type                 | Default            | Description                                                            |
+| --------------- | -------------------- | ------------------ | ---------------------------------------------------------------------- |
+| path            | <code>Path</code>    |                    | <p>Path to store data at.</p>                                          |
+| value           | <code>\*</code>      |                    | <p>Value to store at given key.</p>                                    |
+| [options]       | <code>Object</code>  |                    | <p>Options</p>                                                         |
+| [options.force] | <code>boolean</code> | <code>false</code> | <p>Whether to force change even value is altered by user manually.</p> |
 
 <a name="DataObject+setObject"></a>
 
