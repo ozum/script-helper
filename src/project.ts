@@ -82,7 +82,7 @@ export default class Project extends ResettableFile {
       const { pkg: projectPkg, root: projectRoot } = getProjectPackage(moduleRoot, modulePackage);
       const name = projectPkg.name;
       const moduleName = modulePackage.name;
-      const registryFile = path.join(projectRoot, `${safeName(name)}-registry.json`);
+      const registryFile = path.join(projectRoot, `${safeName(moduleName)}-registry.json`);
       const { config = {}, filePath: configFile = undefined } = cosmiconfig(safeName(moduleName), { sync: true }).load(projectRoot) || {};
       super(registryFile, { track, logLevel, logger, sourceRoot: moduleRoot });
       internalData.set(this, { name, moduleName, configFile, config, debug, filesDir, modulePackage });

@@ -2,10 +2,18 @@
   "name": "script-helper",
   "version": "0.8.3",
   "description": "Helper for creating and maintaining boilerplates, configurations and script modules for npm projects",
-  "keywords": ["boilerplate", "scripts", "scripts module"],
+  "keywords": [
+    "boilerplate",
+    "scripts",
+    "scripts module"
+  ],
   "main": "lib/index",
   "types": "lib/index",
-  "files": ["lib", "bin", "@types"],
+  "files": [
+    "lib",
+    "bin",
+    "@types"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ozum/script-helper.git"
@@ -14,24 +22,6 @@
     "url": "https://github.com/ozum/script-helper/issues"
   },
   "homepage": "https://github.com/ozum/script-helper#readme",
-  "scripts": {
-    "build": "moe-scripts build",
-    "build:doc": "npm run parentClass:get && moe-scripts doc --no-cache && npm run parentClass:remove",
-    "commit": "moe-scripts commit",
-    "file": "f() { P=$1; P=${P/src/lib}; P=${P/.ts/.js}; tsc-watch --onSuccess \"node -r source-map-support/register ${P}\"; }; f",
-    "format": "moe-scripts format",
-    "lint": "moe-scripts lint",
-    "prepublishOnly": "npm run build",
-    "release": "git checkout master && git pull origin master && standard-version && git push --follow-tags origin master && npm publish",
-    "squash": "BRANCH=`git rev-parse --abbrev-ref HEAD` && git checkout master && git merge --squash $BRANCH && npm run commit",
-    "test": "moe-scripts test",
-    "test:update": "moe-scripts test --updateSnapshot",
-    "validate": "moe-scripts validate",
-    "watch": "concurrently 'npm run build -- --watch' 'npm run test -- --watch' | awk '{gsub(/\\033c/,\"\") system(\"\")}1'",
-    "parentClass:get":
-      "npm run parentClass:remove && svn export https://github.com/ozum/resettable-file/trunk/src src/resettable-file && sed -i '' $'s/@classdesc/@classdesc\\\n * @private/' src/resettable-file/resettable-file.ts",
-    "parentClass:remove": "rm -rf src/resettable-file"
-  },
   "author": {
     "name": "Özüm Eldoğan"
   },
@@ -50,7 +40,7 @@
     "@types/verror": "^1.10.3",
     "@types/which": "^1.3.1",
     "internal-data": "^0.3.1",
-    "moe-scripts": "0.0.61"
+    "moe-scripts": "^0.1.8"
   },
   "dependencies": {
     "arrify": "^1.0.1",
@@ -61,8 +51,23 @@
     "lodash.pickby": "^4.6.0",
     "manage-path": "^2.0.0",
     "read-pkg-up": "^3.0.0",
-    "resettable-file": "^0.3.3",
+    "resettable-file": "^0.3.4",
     "verror": "^1.10.0",
     "which": "^1.3.0"
+  },
+  "scripts": {
+    "build": "moe-scripts build",
+    "build:doc": "moe-scripts doc --no-cache",
+    "commit": "moe-scripts commit",
+    "file": "f() { P=$1; P=${P/src/lib}; P=${P/.ts/.js}; tsc-watch --onSuccess \"node -r source-map-support/register ${P}\"; }; f",
+    "format": "moe-scripts format",
+    "lint": "moe-scripts lint",
+    "prepublishOnly": "npm run build",
+    "release": "git checkout master && git pull origin master && standard-version && git push --follow-tags origin master && npm publish",
+    "squash": "BRANCH=`git rev-parse --abbrev-ref HEAD` && git checkout master && git merge --squash $BRANCH && npm run commit",
+    "test": "moe-scripts test",
+    "test:update": "moe-scripts test --updateSnapshot",
+    "validate": "moe-scripts validate",
+    "watch": "concurrently 'npm run build -- --watch' 'npm run test -- --watch' | awk '{gsub(/\\033c/,\"\") system(\"\")}1'"
   }
 }

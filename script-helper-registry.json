@@ -1,0 +1,45 @@
+{
+  "createdDataFiles": [],
+  "directories": [],
+  "files": {
+    ".env": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
+    ".env.sample": "541a113c4498a32afd4d6194f9e4c477c759c5c5",
+    ".npmignore": "/Users/ozum/Development/script-helper/node_modules/moe-scripts/lib/config/npmignore",
+    ".gitignore": "/Users/ozum/Development/script-helper/node_modules/moe-scripts/lib/config/gitignore/compiled",
+    ".gitattributes": "/Users/ozum/Development/script-helper/node_modules/moe-scripts/lib/config/gitattributes",
+    ".editorconfig": "c50319bb37e0b3e644a50e482e51c3907b6a5656",
+    ".prettierrc.js": "e7752656e37970910d6a56d49f00dcc609d959f4",
+    ".prettierignore": "/Users/ozum/Development/script-helper/node_modules/moe-scripts/lib/config/prettierignore/compiled",
+    ".huskyrc.js": "d699091e567c2e0216004c2827daa8c8b008e2c6",
+    "commitlint.config.js": "5bde02ad345aad2a2206f6af8b92e913cd8e8e32",
+    "tslint.json": "2aad7bc9af15b75d9af518d68a6d8a5281f35b14",
+    "tsconfig.json": "53861c8e1ccba4c9ea2deaae2814d55b44b8e1f6",
+    "tsconfig-test.json": "/Users/ozum/Development/script-helper/node_modules/moe-scripts/lib/config/tsconfig/backend-test.json",
+    "package.json": [
+      {
+        "op": "test",
+        "path": "/scripts",
+        "value": {
+          "file": "f() { P=$1; P=${P/src/lib}; P=${P/.ts/.js}; tsc-watch --onSuccess \"node -r source-map-support/register ${P}\"; }; f",
+          "watch": "concurrently 'npm run build -- --watch' 'npm run test -- --watch' | awk '{gsub(/\\033c/,\"\") system(\"\")}1'",
+          "build": "moe-scripts build",
+          "build:doc": "moe-scripts doc --no-cache",
+          "test": "moe-scripts test",
+          "test:update": "moe-scripts test --updateSnapshot",
+          "lint": "moe-scripts lint",
+          "format": "moe-scripts format",
+          "validate": "moe-scripts validate",
+          "commit": "moe-scripts commit",
+          "prepublishOnly": "npm run build",
+          "squash": "BRANCH=`git rev-parse --abbrev-ref HEAD` && git checkout master && git merge --squash $BRANCH && npm run commit",
+          "release":
+            "git checkout master && git pull origin master && standard-version && git push --follow-tags origin master && npm publish"
+        }
+      },
+      {
+        "op": "remove",
+        "path": "/scripts"
+      }
+    ]
+  }
+}
