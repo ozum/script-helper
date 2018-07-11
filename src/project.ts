@@ -83,7 +83,8 @@ export default class Project extends ResettableFile {
       const name = projectPkg.name;
       const moduleName = modulePackage.name;
       const registryFile = path.join(projectRoot, `${safeName(moduleName)}-registry.json`);
-      const { config = {}, filePath: configFile = undefined } = cosmiconfig(safeName(moduleName), { sync: true }).load(projectRoot) || {};
+      const { config = {}, filepath: configFile = undefined } = cosmiconfig(safeName(moduleName)).searchSync(projectRoot) || {};
+
       super(registryFile, { track, logLevel, logger, sourceRoot: moduleRoot });
       internalData.set(this, { name, moduleName, configFile, config, debug, filesDir, modulePackage });
       this.getDataObjectSync("package.json", { format: "json", throwNotExists: true, sortKeys: sortPackageKeys });
@@ -316,6 +317,7 @@ export default class Project extends ResettableFile {
     } catch (_error) {
       // ignore _error
     }
+
     try {
       const modPkgPath = require.resolve(`${modName}/package.json`);
       const modPkgDir = path.dirname(modPkgPath!);

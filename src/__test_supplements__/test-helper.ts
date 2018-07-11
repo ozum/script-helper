@@ -20,7 +20,7 @@ export async function createProject(name: string, target: string) {
 
   await Promise.all([
     fs.copy(path.join(SOURCE, name), projectRoot),
-    fs.copy(path.join(SOURCE, "node_modules"), path.join(projectRoot, "node_modules")),
+    fs.copy(path.join(SOURCE, "node_modules_source"), path.join(projectRoot, "node_modules")), // İsmi node_modules olursa .gitignore dolayısı ile git repo'ya yazılmaz, node_modules_source kullan.
     // Create symbolic link for concurrently. (Behaves like concurrently module is installed)
     fs.ensureSymlink(
       path.join(__dirname, "../../node_modules/.bin/concurrently"),

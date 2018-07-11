@@ -141,7 +141,8 @@ describe("Project", () => {
     });
 
     it("should return binary name if it is in path.", () => {
-      expect(projects.ts.resolveBin("echo-cli")).toBe("echo-cli");
+      // expect(projects.ts.resolveBin("echo-cli")).toBe("echo-cli");
+      expect(projects.ts.resolveBin("echo-cli")).toBe("./src/__test_supplements__/source/node_modules_source/echo-cli/dist/index.js");
     });
 
     it("should return path of binary", () => {

@@ -7,108 +7,107 @@ Helper for creating and maintaining boilerplates, configurations and script modu
 [![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
-
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
-* [Description](#description)
-* [Inspired](#inspired)
-* [Synopsis](#synopsis)
-  * [Module Hierarchy](#module-hierarchy)
-  * [Configuration](#configuration)
-  * ['my-scripts' module](#my-scripts-module)
-    * [my-scripts/package.json](#my-scriptspackagejson)
-    * [my-scripts/lib/index.js](#my-scriptslibindexjs)
-    * [my-scripts/lib/scripts/init.js](#my-scriptslibscriptsinitjs)
-    * [my-scripts/lib/scripts/reset.js](#my-scriptslibscriptsresetjs)
-    * [my-scripts/lib/scripts/build/index.js](#my-scriptslibscriptsbuildindexjs)
-    * [my-scripts/lib/scripts/build/tsc.js](#my-scriptslibscriptsbuildtscjs)
-    * [my-scripts/lib/scripts/test.js](#my-scriptslibscriptstestjs)
-  * [npm project module](#npm-project-module)
-    * [package.json](#packagejson)
-* [Configuration](#configuration-1)
-* [Highlights](#highlights)
-  * [Notes](#notes)
-    * [Disable Tracking](#disable-tracking)
-* [API](#api)
-  * [Classes](#classes)
-  * [Functions](#functions)
-  * [Typedefs](#typedefs)
-  * [Project](#project)
-    * [new Project([options])](#new-projectoptions)
-    * [project.name : <code>string</code>](#projectname--codestringcode)
-    * [project.safeName : <code>string</code>](#projectsafename--codestringcode)
-    * [project.moduleName : <code>string</code>](#projectmodulename--codestringcode)
-    * [project.safeModuleName : <code>string</code>](#projectsafemodulename--codestringcode)
-    * [project.moduleRoot : <code>string</code>](#projectmoduleroot--codestringcode)
-    * [project.config : <code>Object</code>](#projectconfig--codeobjectcode)
-    * [project.package : <code>DataObject</code>](#projectpackage--codedataobjectcode)
-    * [project.modulePackage : <code>Object</code>](#projectmodulepackage--codeobjectcode)
-    * [project.isCompiled : <code>boolean</code>](#projectiscompiled--codebooleancode)
-    * [project.isTypeScript : <code>boolean</code>](#projectistypescript--codebooleancode)
-    * [project.moduleBin : <code>string</code>](#projectmodulebin--codestringcode)
-    * [project.availableScripts : <code>Array.&lt;string&gt;</code>](#projectavailablescripts--codearrayltstringgtcode)
-    * [project.scriptsDir : <code>string</code>](#projectscriptsdir--codestringcode)
-    * [project.configDir : <code>string</code>](#projectconfigdir--codestringcode)
-    * [project.root : <code>string</code>](#projectroot--codestringcode)
-    * [project.sourceRoot : <code>string</code>](#projectsourceroot--codestringcode)
-    * [project.track : <code>boolean</code>](#projecttrack--codebooleancode)
-    * [project.logger : <code>BasicLogger</code>](#projectlogger--codebasicloggercode)
-    * [project.logLevel : <code>string</code>](#projectloglevel--codestringcode)
-    * [project.resolveModule(name) ⇒ <code>string</code>](#projectresolvemodulename-%E2%87%92-codestringcode)
-    * [project.bin(executable) ⇒ <code>string</code>](#projectbinexecutable-%E2%87%92-codestringcode)
-    * [project.resolveScriptsBin([options], [executable], [cwd]) ⇒ <code>string</code> \| <code>undefined</code>](#projectresolvescriptsbinoptions-executable-cwd-%E2%87%92-codestringcode-%5C-codeundefinedcode)
-    * [project.resolveBin(modName, [options], [executable], [cwd]) ⇒ <code>string</code>](#projectresolvebinmodname-options-executable-cwd-%E2%87%92-codestringcode)
-    * [project.fromModuleRoot(...part) ⇒ <code>string</code>](#projectfrommodulerootpart-%E2%87%92-codestringcode)
-    * [project.fromConfigDir(...part) ⇒ <code>string</code>](#projectfromconfigdirpart-%E2%87%92-codestringcode)
-    * [project.fromScriptsDir(...part) ⇒ <code>string</code>](#projectfromscriptsdirpart-%E2%87%92-codestringcode)
-    * [project.hasAnyDep(deps, [t], [f]) ⇒ <code>\*</code>](#projecthasanydepdeps-t-f-%E2%87%92-code%5Ccode)
-    * [project.envIsSet(name) ⇒ <code>boolean</code>](#projectenvissetname-%E2%87%92-codebooleancode)
-    * [project.parseEnv(name, defaultValue) ⇒ <code>\*</code>](#projectparseenvname-defaultvalue-%E2%87%92-code%5Ccode)
-    * [project.executeFromCLISync(exit) ⇒ <code>ScriptResult</code> \| <code>void</code>](#projectexecutefromclisyncexit-%E2%87%92-codescriptresultcode-%5C-codevoidcode)
-    * [project.executeScriptFileSync(scriptFile, [args]) ⇒ <code>ScriptResult</code> \| <code>Array.&lt;ScriptResult&gt;</code>](#projectexecutescriptfilesyncscriptfile-args-%E2%87%92-codescriptresultcode-%5C-codearrayltscriptresultgtcode)
-    * [project.hasScriptSync(scriptFile) ⇒ <code>string</code> \| <code>undefined</code>](#projecthasscriptsyncscriptfile-%E2%87%92-codestringcode-%5C-codeundefinedcode)
-    * [project.executeSync(...executables) ⇒ <code>ScriptResult</code>](#projectexecutesyncexecutables-%E2%87%92-codescriptresultcode)
-    * [project.executeWithoutExitSync(...executables) ⇒ <code>ScriptResult</code>](#projectexecutewithoutexitsyncexecutables-%E2%87%92-codescriptresultcode)
-    * [project.getConcurrentlyArgs(scripts, [options], [killOthers]) ⇒ <code>Array.&lt;string&gt;</code>](#projectgetconcurrentlyargsscripts-options-killothers-%E2%87%92-codearrayltstringgtcode)
-    * [project.isOptedOut(key, [t], [f]) ⇒ <code>\*</code>](#projectisoptedoutkey-t-f-%E2%87%92-code%5Ccode)
-    * [project.isOptedIn(key, [t], [f]) ⇒ <code>\*</code>](#projectisoptedinkey-t-f-%E2%87%92-code%5Ccode)
-    * [project.fromRoot(...part) ⇒ <code>string</code>](#projectfromrootpart-%E2%87%92-codestringcode)
-    * [project.fromSourceRoot(...part) ⇒ <code>string</code>](#projectfromsourcerootpart-%E2%87%92-codestringcode)
-    * [project.isDataFile(projectFile) ⇒ <code>boolean</code>](#projectisdatafileprojectfile-%E2%87%92-codebooleancode)
-    * [project.hasFileSync(projectFiles, [t], [f]) ⇒ <code>\*</code>](#projecthasfilesyncprojectfiles-t-f-%E2%87%92-code%5Ccode)
-    * [project.isBrokenLink(projectFile) ⇒ <code>boolena</code>](#projectisbrokenlinkprojectfile-%E2%87%92-codeboolenacode)
-    * [project.saveSync() ⇒ <code>void</code>](#projectsavesync-%E2%87%92-codevoidcode)
-    * [project.resetSync() ⇒ <code>void</code>](#projectresetsync-%E2%87%92-codevoidcode)
-    * [project.resetFileSync(projectFile) ⇒ <code>void</code>](#projectresetfilesyncprojectfile-%E2%87%92-codevoidcode)
-    * [project.getFileDetailsSync(projectFile, options) ⇒ <code>FileDetail</code>](#projectgetfiledetailssyncprojectfile-options-%E2%87%92-codefiledetailcode)
-    * [project.getFileHashSync(projectFile) ⇒ <code>string</code>](#projectgetfilehashsyncprojectfile-%E2%87%92-codestringcode)
-    * [project.getDataObjectSync(projectFile, [options]) ⇒ <code>DataObject</code>](#projectgetdataobjectsyncprojectfile-options-%E2%87%92-codedataobjectcode)
-    * [project.createSymLinkSync(targetFile, projectFile, [options]) ⇒ <code>void</code>](#projectcreatesymlinksynctargetfile-projectfile-options-%E2%87%92-codevoidcode)
-    * [project.readFileSync(projectFile, [options]) ⇒ <code>\*</code>](#projectreadfilesyncprojectfile-options-%E2%87%92-code%5Ccode)
-    * [project.readFileDetailedSync(projectFile, [options]) ⇒ <code>Object</code>](#projectreadfiledetailedsyncprojectfile-options-%E2%87%92-codeobjectcode)
-    * [project.writeFileSync(projectFile, data, [options]) ⇒ <code>void</code>](#projectwritefilesyncprojectfile-data-options-%E2%87%92-codevoidcode)
-    * [project.deleteFileSync(projectFile, [options]) ⇒ <code>void</code>](#projectdeletefilesyncprojectfile-options-%E2%87%92-codevoidcode)
-    * [project.copyFileSync(sourceFile, projectFile, [options]) ⇒ <code>void</code>](#projectcopyfilesyncsourcefile-projectfile-options-%E2%87%92-codevoidcode)
-    * [project.createDirSync(projectDir, [options]) ⇒ <code>void</code>](#projectcreatedirsyncprojectdir-options-%E2%87%92-codevoidcode)
-    * [project.deleteDirSync(projectDir, [options]) ⇒ <code>void</code>](#projectdeletedirsyncprojectdir-options-%E2%87%92-codevoidcode)
-  * [DataObject](#dataobject)
-    * [new DataObject([data], [options])](#new-dataobjectdata-options)
-    * [dataObject.isChanged : <code>boolean</code>](#dataobjectischanged--codebooleancode)
-    * [dataObject.data : <code>Data</code>](#dataobjectdata--codedatacode)
-    * [dataObject.original : <code>Data</code>](#dataobjectoriginal--codedatacode)
-    * [dataObject.snapshot : <code>Data</code>](#dataobjectsnapshot--codedatacode)
-    * [dataObject.has(props, [t], [f]) ⇒ <code>\*</code>](#dataobjecthasprops-t-f-%E2%87%92-code%5Ccode)
-    * [dataObject.hasSubProp(prop, subProps, [t], [f]) ⇒ <code>\*</code>](#dataobjecthassubpropprop-subprops-t-f-%E2%87%92-code%5Ccode)
-    * [dataObject.get(path) ⇒ <code>\*</code>](#dataobjectgetpath-%E2%87%92-code%5Ccode)
-    * [dataObject.set(path, value, [options]) ⇒ <code>this</code>](#dataobjectsetpath-value-options-%E2%87%92-codethiscode)
-    * [dataObject.setObject(data, [options]) ⇒ <code>this</code>](#dataobjectsetobjectdata-options-%E2%87%92-codethiscode)
-    * [dataObject.remove(path, [options]) ⇒ <code>this</code>](#dataobjectremovepath-options-%E2%87%92-codethiscode)
-    * [dataObject.reset() ⇒ <code>Array.&lt;Operation&gt;</code>](#dataobjectreset-%E2%87%92-codearrayltoperationgtcode)
-  * [replaceArgumentName(args, names, newName) ⇒ <code>Array</code>](#replaceargumentnameargs-names-newname-%E2%87%92-codearraycode)
-  * [Options : <code>Object</code>](#options--codeobjectcode)
-  * [Executable : <code>string</code> \| <code>Array.&lt;(string\|Array.&lt;string&gt;\|SpawnOptions)&gt;</code>](#executable--codestringcode-%5C-codearrayltstring%5Carrayltstringgt%5Cspawnoptionsgtcode)
-  * [ScriptResult : <code>Object</code>](#scriptresult--codeobjectcode)
-  * [Script : <code>function</code>](#script--codefunctioncode)
+- [Description](#description)
+- [Inspired](#inspired)
+- [Synopsis](#synopsis)
+  - [Module Hierarchy](#module-hierarchy)
+  - [Configuration](#configuration)
+  - ['my-scripts' module](#my-scripts-module)
+    - [my-scripts/package.json](#my-scriptspackagejson)
+    - [my-scripts/lib/index.js](#my-scriptslibindexjs)
+    - [my-scripts/lib/scripts/init.js](#my-scriptslibscriptsinitjs)
+    - [my-scripts/lib/scripts/reset.js](#my-scriptslibscriptsresetjs)
+    - [my-scripts/lib/scripts/build/index.js](#my-scriptslibscriptsbuildindexjs)
+    - [my-scripts/lib/scripts/build/tsc.js](#my-scriptslibscriptsbuildtscjs)
+    - [my-scripts/lib/scripts/test.js](#my-scriptslibscriptstestjs)
+  - [npm project module](#npm-project-module)
+    - [package.json](#packagejson)
+- [Configuration](#configuration-1)
+- [Highlights](#highlights)
+  - [Notes](#notes)
+    - [Disable Tracking](#disable-tracking)
+- [API](#api)
+  - [Classes](#classes)
+  - [Functions](#functions)
+  - [Typedefs](#typedefs)
+  - [Project](#project)
+    - [new Project([options])](#new-projectoptions)
+    - [project.name : <code>string</code>](#projectname--codestringcode)
+    - [project.safeName : <code>string</code>](#projectsafename--codestringcode)
+    - [project.moduleName : <code>string</code>](#projectmodulename--codestringcode)
+    - [project.safeModuleName : <code>string</code>](#projectsafemodulename--codestringcode)
+    - [project.moduleRoot : <code>string</code>](#projectmoduleroot--codestringcode)
+    - [project.config : <code>Object</code>](#projectconfig--codeobjectcode)
+    - [project.package : <code>DataObject</code>](#projectpackage--codedataobjectcode)
+    - [project.modulePackage : <code>Object</code>](#projectmodulepackage--codeobjectcode)
+    - [project.isCompiled : <code>boolean</code>](#projectiscompiled--codebooleancode)
+    - [project.isTypeScript : <code>boolean</code>](#projectistypescript--codebooleancode)
+    - [project.moduleBin : <code>string</code>](#projectmodulebin--codestringcode)
+    - [project.availableScripts : <code>Array.&lt;string&gt;</code>](#projectavailablescripts--codearrayltstringgtcode)
+    - [project.scriptsDir : <code>string</code>](#projectscriptsdir--codestringcode)
+    - [project.configDir : <code>string</code>](#projectconfigdir--codestringcode)
+    - [project.root : <code>string</code>](#projectroot--codestringcode)
+    - [project.sourceRoot : <code>string</code>](#projectsourceroot--codestringcode)
+    - [project.track : <code>boolean</code>](#projecttrack--codebooleancode)
+    - [project.logger : <code>BasicLogger</code>](#projectlogger--codebasicloggercode)
+    - [project.logLevel : <code>string</code>](#projectloglevel--codestringcode)
+    - [project.resolveModule(name) ⇒ <code>string</code>](#projectresolvemodulename-%E2%87%92-codestringcode)
+    - [project.bin(executable) ⇒ <code>string</code>](#projectbinexecutable-%E2%87%92-codestringcode)
+    - [project.resolveScriptsBin([options], [executable], [cwd]) ⇒ <code>string</code> \| <code>undefined</code>](#projectresolvescriptsbinoptions-executable-cwd-%E2%87%92-codestringcode-%5C-codeundefinedcode)
+    - [project.resolveBin(modName, [options], [executable], [cwd]) ⇒ <code>string</code>](#projectresolvebinmodname-options-executable-cwd-%E2%87%92-codestringcode)
+    - [project.fromModuleRoot(...part) ⇒ <code>string</code>](#projectfrommodulerootpart-%E2%87%92-codestringcode)
+    - [project.fromConfigDir(...part) ⇒ <code>string</code>](#projectfromconfigdirpart-%E2%87%92-codestringcode)
+    - [project.fromScriptsDir(...part) ⇒ <code>string</code>](#projectfromscriptsdirpart-%E2%87%92-codestringcode)
+    - [project.hasAnyDep(deps, [t], [f]) ⇒ <code>\*</code>](#projecthasanydepdeps-t-f-%E2%87%92-code%5Ccode)
+    - [project.envIsSet(name) ⇒ <code>boolean</code>](#projectenvissetname-%E2%87%92-codebooleancode)
+    - [project.parseEnv(name, defaultValue) ⇒ <code>\*</code>](#projectparseenvname-defaultvalue-%E2%87%92-code%5Ccode)
+    - [project.executeFromCLISync(exit) ⇒ <code>ScriptResult</code> \| <code>void</code>](#projectexecutefromclisyncexit-%E2%87%92-codescriptresultcode-%5C-codevoidcode)
+    - [project.executeScriptFileSync(scriptFile, [args]) ⇒ <code>ScriptResult</code> \| <code>Array.&lt;ScriptResult&gt;</code>](#projectexecutescriptfilesyncscriptfile-args-%E2%87%92-codescriptresultcode-%5C-codearrayltscriptresultgtcode)
+    - [project.hasScriptSync(scriptFile) ⇒ <code>string</code> \| <code>undefined</code>](#projecthasscriptsyncscriptfile-%E2%87%92-codestringcode-%5C-codeundefinedcode)
+    - [project.executeSync(...executables) ⇒ <code>ScriptResult</code>](#projectexecutesyncexecutables-%E2%87%92-codescriptresultcode)
+    - [project.executeWithoutExitSync(...executables) ⇒ <code>ScriptResult</code>](#projectexecutewithoutexitsyncexecutables-%E2%87%92-codescriptresultcode)
+    - [project.getConcurrentlyArgs(scripts, [options], [killOthers]) ⇒ <code>Array.&lt;string&gt;</code>](#projectgetconcurrentlyargsscripts-options-killothers-%E2%87%92-codearrayltstringgtcode)
+    - [project.isOptedOut(key, [t], [f]) ⇒ <code>\*</code>](#projectisoptedoutkey-t-f-%E2%87%92-code%5Ccode)
+    - [project.isOptedIn(key, [t], [f]) ⇒ <code>\*</code>](#projectisoptedinkey-t-f-%E2%87%92-code%5Ccode)
+    - [project.fromRoot(...part) ⇒ <code>string</code>](#projectfromrootpart-%E2%87%92-codestringcode)
+    - [project.fromSourceRoot(...part) ⇒ <code>string</code>](#projectfromsourcerootpart-%E2%87%92-codestringcode)
+    - [project.isDataFile(projectFile) ⇒ <code>boolean</code>](#projectisdatafileprojectfile-%E2%87%92-codebooleancode)
+    - [project.hasFileSync(projectFiles, [t], [f]) ⇒ <code>\*</code>](#projecthasfilesyncprojectfiles-t-f-%E2%87%92-code%5Ccode)
+    - [project.isBrokenLink(projectFile) ⇒ <code>boolena</code>](#projectisbrokenlinkprojectfile-%E2%87%92-codeboolenacode)
+    - [project.saveSync() ⇒ <code>void</code>](#projectsavesync-%E2%87%92-codevoidcode)
+    - [project.resetSync() ⇒ <code>void</code>](#projectresetsync-%E2%87%92-codevoidcode)
+    - [project.resetFileSync(projectFile) ⇒ <code>void</code>](#projectresetfilesyncprojectfile-%E2%87%92-codevoidcode)
+    - [project.getFileDetailsSync(projectFile, options) ⇒ <code>FileDetail</code>](#projectgetfiledetailssyncprojectfile-options-%E2%87%92-codefiledetailcode)
+    - [project.getFileHashSync(projectFile) ⇒ <code>string</code>](#projectgetfilehashsyncprojectfile-%E2%87%92-codestringcode)
+    - [project.getDataObjectSync(projectFile, [options]) ⇒ <code>DataObject</code>](#projectgetdataobjectsyncprojectfile-options-%E2%87%92-codedataobjectcode)
+    - [project.createSymLinkSync(targetFile, projectFile, [options]) ⇒ <code>void</code>](#projectcreatesymlinksynctargetfile-projectfile-options-%E2%87%92-codevoidcode)
+    - [project.readFileSync(projectFile, [options]) ⇒ <code>\*</code>](#projectreadfilesyncprojectfile-options-%E2%87%92-code%5Ccode)
+    - [project.readFileDetailedSync(projectFile, [options]) ⇒ <code>Object</code>](#projectreadfiledetailedsyncprojectfile-options-%E2%87%92-codeobjectcode)
+    - [project.writeFileSync(projectFile, data, [options]) ⇒ <code>void</code>](#projectwritefilesyncprojectfile-data-options-%E2%87%92-codevoidcode)
+    - [project.deleteFileSync(projectFile, [options]) ⇒ <code>void</code>](#projectdeletefilesyncprojectfile-options-%E2%87%92-codevoidcode)
+    - [project.copyFileSync(sourceFile, projectFile, [options]) ⇒ <code>void</code>](#projectcopyfilesyncsourcefile-projectfile-options-%E2%87%92-codevoidcode)
+    - [project.createDirSync(projectDir, [options]) ⇒ <code>void</code>](#projectcreatedirsyncprojectdir-options-%E2%87%92-codevoidcode)
+    - [project.deleteDirSync(projectDir, [options]) ⇒ <code>void</code>](#projectdeletedirsyncprojectdir-options-%E2%87%92-codevoidcode)
+  - [DataObject](#dataobject)
+    - [new DataObject([data], [options])](#new-dataobjectdata-options)
+    - [dataObject.isChanged : <code>boolean</code>](#dataobjectischanged--codebooleancode)
+    - [dataObject.data : <code>Data</code>](#dataobjectdata--codedatacode)
+    - [dataObject.original : <code>Data</code>](#dataobjectoriginal--codedatacode)
+    - [dataObject.snapshot : <code>Data</code>](#dataobjectsnapshot--codedatacode)
+    - [dataObject.has(props, [t], [f]) ⇒ <code>\*</code>](#dataobjecthasprops-t-f-%E2%87%92-code%5Ccode)
+    - [dataObject.hasSubProp(prop, subProps, [t], [f]) ⇒ <code>\*</code>](#dataobjecthassubpropprop-subprops-t-f-%E2%87%92-code%5Ccode)
+    - [dataObject.get(path) ⇒ <code>\*</code>](#dataobjectgetpath-%E2%87%92-code%5Ccode)
+    - [dataObject.set(path, value, [options]) ⇒ <code>this</code>](#dataobjectsetpath-value-options-%E2%87%92-codethiscode)
+    - [dataObject.setObject(data, [options]) ⇒ <code>this</code>](#dataobjectsetobjectdata-options-%E2%87%92-codethiscode)
+    - [dataObject.remove(path, [options]) ⇒ <code>this</code>](#dataobjectremovepath-options-%E2%87%92-codethiscode)
+    - [dataObject.reset() ⇒ <code>Array.&lt;Operation&gt;</code>](#dataobjectreset-%E2%87%92-codearrayltoperationgtcode)
+  - [replaceArgumentName(args, names, newName) ⇒ <code>Array</code>](#replaceargumentnameargs-names-newname-%E2%87%92-codearraycode)
+  - [Options : <code>Object</code>](#options--codeobjectcode)
+  - [Executable : <code>string</code> \| <code>Array.&lt;(string\|Array.&lt;string&gt;\|SpawnOptions)&gt;</code>](#executable--codestringcode-%5C-codearrayltstring%5Carrayltstringgt%5Cspawnoptionsgtcode)
+  - [ScriptResult : <code>Object</code>](#scriptresult--codeobjectcode)
+  - [Script : <code>function</code>](#script--codefunctioncode)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -316,30 +315,30 @@ By default you can design your own configuration schema. `script-helper` provide
 
 # Highlights
 
-* Tries best for non-destructive modifications.
-* Tracks all modifications in a registry json file.
-* Provides `project.reset()` method to reset all changes made by this module.
-* Changes in JSON and YAML files are tracked by key level using [resettable](https://www.npmjs.com/package/resettable).
-  * User created keys and values would not be deleted/modified if `{ force: true }` ıs not used.
-  * User can further modify data files. They do not interfere with this module's targets.
-  * CAVEAT: [resettable](https://www.npmjs.com/package/resettable) cannot handle all cases, please see it's documentation and always use version control.
-* Changes in non data files are tracked using SHA-1 hash.
-* JSON, YAML and JavaScript files are normalized in memory before comparison to eliminate white-space noise.
-* Provides `execute()` helper function to execute your scripts and handle errors and saving project data files and registry.
-* Provides `project.save()` method for saving registry json file and changes made to data files.
+- Tries best for non-destructive modifications.
+- Tracks all modifications in a registry json file.
+- Provides `project.reset()` method to reset all changes made by this module.
+- Changes in JSON and YAML files are tracked by key level using [resettable](https://www.npmjs.com/package/resettable).
+  - User created keys and values would not be deleted/modified if `{ force: true }` ıs not used.
+  - User can further modify data files. They do not interfere with this module's targets.
+  - CAVEAT: [resettable](https://www.npmjs.com/package/resettable) cannot handle all cases, please see it's documentation and always use version control.
+- Changes in non data files are tracked using SHA-1 hash.
+- JSON, YAML and JavaScript files are normalized in memory before comparison to eliminate white-space noise.
+- Provides `execute()` helper function to execute your scripts and handle errors and saving project data files and registry.
+- Provides `project.save()` method for saving registry json file and changes made to data files.
 
 ## Notes
 
-* For tracking data files by key level, use `project.readDataFile()` method, which returns [DataObject](#dataobject)
-  * Methods of [DataObject](#dataobject) such as `set()`, `remove()` provides automatic log messages.
-  * You can directly access data using `.data` property.
-  * Tracking still works if you manipulate data from `.data` directly, because modifications are calculated during file save.
-* All data files read with `project.readDataFile()` are saved during project save (`project.save()`).
-  * Do not use `project.writeFile()` for those files.
-* If user modifies file or data created by this library, they are not modified further if not forced with `{ force: true }` option.
-* DO NOT forget `project.save()` after you finish your modifications.
-  * Or use `execute()` helper function, which saves project even after error in your scripts, and handle `process.exit()` as necessary.
-* `reset()` method does not recreate deleted files and directories.
+- For tracking data files by key level, use `project.readDataFile()` method, which returns [DataObject](#dataobject)
+  - Methods of [DataObject](#dataobject) such as `set()`, `remove()` provides automatic log messages.
+  - You can directly access data using `.data` property.
+  - Tracking still works if you manipulate data from `.data` directly, because modifications are calculated during file save.
+- All data files read with `project.readDataFile()` are saved during project save (`project.save()`).
+  - Do not use `project.writeFile()` for those files.
+- If user modifies file or data created by this library, they are not modified further if not forced with `{ force: true }` option.
+- DO NOT forget `project.save()` after you finish your modifications.
+  - Or use `execute()` helper function, which saves project even after error in your scripts, and handle `process.exit()` as necessary.
+- `reset()` method does not recreate deleted files and directories.
 
 ### Disable Tracking
 
@@ -412,64 +411,64 @@ Also provides <code>reset()</code> method which reverses all modifications made 
 
 **Kind**: global class
 
-* [Project](#Project)
-  * [new Project([options])](#new_Project_new)
-  * [.name](#Project+name) : <code>string</code>
-  * [.safeName](#Project+safeName) : <code>string</code>
-  * [.moduleName](#Project+moduleName) : <code>string</code>
-  * [.safeModuleName](#Project+safeModuleName) : <code>string</code>
-  * [.moduleRoot](#Project+moduleRoot) : <code>string</code>
-  * [.config](#Project+config) : <code>Object</code>
-  * [.package](#Project+package) : [<code>DataObject</code>](#DataObject)
-  * [.modulePackage](#Project+modulePackage) : <code>Object</code>
-  * [.isCompiled](#Project+isCompiled) : <code>boolean</code>
-  * [.isTypeScript](#Project+isTypeScript) : <code>boolean</code>
-  * [.moduleBin](#Project+moduleBin) : <code>string</code>
-  * [.availableScripts](#Project+availableScripts) : <code>Array.&lt;string&gt;</code>
-  * [.scriptsDir](#Project+scriptsDir) : <code>string</code>
-  * [.configDir](#Project+configDir) : <code>string</code>
-  * [.root](#ResettableFile+root) : <code>string</code>
-  * [.sourceRoot](#ResettableFile+sourceRoot) : <code>string</code>
-  * [.track](#ResettableFile+track) : <code>boolean</code>
-  * [.logger](#ResettableFile+logger) : <code>BasicLogger</code>
-  * [.logLevel](#ResettableFile+logLevel) : <code>string</code>
-  * [.resolveModule(name)](#Project+resolveModule) ⇒ <code>string</code>
-  * [.bin(executable)](#Project+bin) ⇒ <code>string</code>
-  * [.resolveScriptsBin([options], [executable], [cwd])](#Project+resolveScriptsBin) ⇒ <code>string</code> \| <code>undefined</code>
-  * [.resolveBin(modName, [options], [executable], [cwd])](#Project+resolveBin) ⇒ <code>string</code>
-  * [.fromModuleRoot(...part)](#Project+fromModuleRoot) ⇒ <code>string</code>
-  * [.fromConfigDir(...part)](#Project+fromConfigDir) ⇒ <code>string</code>
-  * [.fromScriptsDir(...part)](#Project+fromScriptsDir) ⇒ <code>string</code>
-  * [.hasAnyDep(deps, [t], [f])](#Project+hasAnyDep) ⇒ <code>\*</code>
-  * [.envIsSet(name)](#Project+envIsSet) ⇒ <code>boolean</code>
-  * [.parseEnv(name, defaultValue)](#Project+parseEnv) ⇒ <code>\*</code>
-  * [.executeFromCLISync(exit)](#Project+executeFromCLISync) ⇒ [<code>ScriptResult</code>](#ScriptResult) \| <code>void</code>
-  * [.executeScriptFileSync(scriptFile, [args])](#Project+executeScriptFileSync) ⇒ [<code>ScriptResult</code>](#ScriptResult) \| [<code>Array.&lt;ScriptResult&gt;</code>](#ScriptResult)
-  * [.hasScriptSync(scriptFile)](#Project+hasScriptSync) ⇒ <code>string</code> \| <code>undefined</code>
-  * [.executeSync(...executables)](#Project+executeSync) ⇒ [<code>ScriptResult</code>](#ScriptResult)
-  * [.executeWithoutExitSync(...executables)](#Project+executeWithoutExitSync) ⇒ [<code>ScriptResult</code>](#ScriptResult)
-  * [.getConcurrentlyArgs(scripts, [options], [killOthers])](#Project+getConcurrentlyArgs) ⇒ <code>Array.&lt;string&gt;</code>
-  * [.isOptedOut(key, [t], [f])](#Project+isOptedOut) ⇒ <code>\*</code>
-  * [.isOptedIn(key, [t], [f])](#Project+isOptedIn) ⇒ <code>\*</code>
-  * [.fromRoot(...part)](#ResettableFile+fromRoot) ⇒ <code>string</code>
-  * [.fromSourceRoot(...part)](#ResettableFile+fromSourceRoot) ⇒ <code>string</code>
-  * [.isDataFile(projectFile)](#ResettableFile+isDataFile) ⇒ <code>boolean</code>
-  * [.hasFileSync(projectFiles, [t], [f])](#ResettableFile+hasFileSync) ⇒ <code>\*</code>
-  * [.isBrokenLink(projectFile)](#ResettableFile+isBrokenLink) ⇒ <code>boolena</code>
-  * [.saveSync()](#ResettableFile+saveSync) ⇒ <code>void</code>
-  * [.resetSync()](#ResettableFile+resetSync) ⇒ <code>void</code>
-  * [.resetFileSync(projectFile)](#ResettableFile+resetFileSync) ⇒ <code>void</code>
-  * [.getFileDetailsSync(projectFile, options)](#ResettableFile+getFileDetailsSync) ⇒ <code>FileDetail</code>
-  * [.getFileHashSync(projectFile)](#ResettableFile+getFileHashSync) ⇒ <code>string</code>
-  * [.getDataObjectSync(projectFile, [options])](#ResettableFile+getDataObjectSync) ⇒ [<code>DataObject</code>](#DataObject)
-  * [.createSymLinkSync(targetFile, projectFile, [options])](#ResettableFile+createSymLinkSync) ⇒ <code>void</code>
-  * [.readFileSync(projectFile, [options])](#ResettableFile+readFileSync) ⇒ <code>\*</code>
-  * [.readFileDetailedSync(projectFile, [options])](#ResettableFile+readFileDetailedSync) ⇒ <code>Object</code>
-  * [.writeFileSync(projectFile, data, [options])](#ResettableFile+writeFileSync) ⇒ <code>void</code>
-  * [.deleteFileSync(projectFile, [options])](#ResettableFile+deleteFileSync) ⇒ <code>void</code>
-  * [.copyFileSync(sourceFile, projectFile, [options])](#ResettableFile+copyFileSync) ⇒ <code>void</code>
-  * [.createDirSync(projectDir, [options])](#ResettableFile+createDirSync) ⇒ <code>void</code>
-  * [.deleteDirSync(projectDir, [options])](#ResettableFile+deleteDirSync) ⇒ <code>void</code>
+- [Project](#Project)
+  - [new Project([options])](#new_Project_new)
+  - [.name](#Project+name) : <code>string</code>
+  - [.safeName](#Project+safeName) : <code>string</code>
+  - [.moduleName](#Project+moduleName) : <code>string</code>
+  - [.safeModuleName](#Project+safeModuleName) : <code>string</code>
+  - [.moduleRoot](#Project+moduleRoot) : <code>string</code>
+  - [.config](#Project+config) : <code>Object</code>
+  - [.package](#Project+package) : [<code>DataObject</code>](#DataObject)
+  - [.modulePackage](#Project+modulePackage) : <code>Object</code>
+  - [.isCompiled](#Project+isCompiled) : <code>boolean</code>
+  - [.isTypeScript](#Project+isTypeScript) : <code>boolean</code>
+  - [.moduleBin](#Project+moduleBin) : <code>string</code>
+  - [.availableScripts](#Project+availableScripts) : <code>Array.&lt;string&gt;</code>
+  - [.scriptsDir](#Project+scriptsDir) : <code>string</code>
+  - [.configDir](#Project+configDir) : <code>string</code>
+  - [.root](#ResettableFile+root) : <code>string</code>
+  - [.sourceRoot](#ResettableFile+sourceRoot) : <code>string</code>
+  - [.track](#ResettableFile+track) : <code>boolean</code>
+  - [.logger](#ResettableFile+logger) : <code>BasicLogger</code>
+  - [.logLevel](#ResettableFile+logLevel) : <code>string</code>
+  - [.resolveModule(name)](#Project+resolveModule) ⇒ <code>string</code>
+  - [.bin(executable)](#Project+bin) ⇒ <code>string</code>
+  - [.resolveScriptsBin([options], [executable], [cwd])](#Project+resolveScriptsBin) ⇒ <code>string</code> \| <code>undefined</code>
+  - [.resolveBin(modName, [options], [executable], [cwd])](#Project+resolveBin) ⇒ <code>string</code>
+  - [.fromModuleRoot(...part)](#Project+fromModuleRoot) ⇒ <code>string</code>
+  - [.fromConfigDir(...part)](#Project+fromConfigDir) ⇒ <code>string</code>
+  - [.fromScriptsDir(...part)](#Project+fromScriptsDir) ⇒ <code>string</code>
+  - [.hasAnyDep(deps, [t], [f])](#Project+hasAnyDep) ⇒ <code>\*</code>
+  - [.envIsSet(name)](#Project+envIsSet) ⇒ <code>boolean</code>
+  - [.parseEnv(name, defaultValue)](#Project+parseEnv) ⇒ <code>\*</code>
+  - [.executeFromCLISync(exit)](#Project+executeFromCLISync) ⇒ [<code>ScriptResult</code>](#ScriptResult) \| <code>void</code>
+  - [.executeScriptFileSync(scriptFile, [args])](#Project+executeScriptFileSync) ⇒ [<code>ScriptResult</code>](#ScriptResult) \| [<code>Array.&lt;ScriptResult&gt;</code>](#ScriptResult)
+  - [.hasScriptSync(scriptFile)](#Project+hasScriptSync) ⇒ <code>string</code> \| <code>undefined</code>
+  - [.executeSync(...executables)](#Project+executeSync) ⇒ [<code>ScriptResult</code>](#ScriptResult)
+  - [.executeWithoutExitSync(...executables)](#Project+executeWithoutExitSync) ⇒ [<code>ScriptResult</code>](#ScriptResult)
+  - [.getConcurrentlyArgs(scripts, [options], [killOthers])](#Project+getConcurrentlyArgs) ⇒ <code>Array.&lt;string&gt;</code>
+  - [.isOptedOut(key, [t], [f])](#Project+isOptedOut) ⇒ <code>\*</code>
+  - [.isOptedIn(key, [t], [f])](#Project+isOptedIn) ⇒ <code>\*</code>
+  - [.fromRoot(...part)](#ResettableFile+fromRoot) ⇒ <code>string</code>
+  - [.fromSourceRoot(...part)](#ResettableFile+fromSourceRoot) ⇒ <code>string</code>
+  - [.isDataFile(projectFile)](#ResettableFile+isDataFile) ⇒ <code>boolean</code>
+  - [.hasFileSync(projectFiles, [t], [f])](#ResettableFile+hasFileSync) ⇒ <code>\*</code>
+  - [.isBrokenLink(projectFile)](#ResettableFile+isBrokenLink) ⇒ <code>boolena</code>
+  - [.saveSync()](#ResettableFile+saveSync) ⇒ <code>void</code>
+  - [.resetSync()](#ResettableFile+resetSync) ⇒ <code>void</code>
+  - [.resetFileSync(projectFile)](#ResettableFile+resetFileSync) ⇒ <code>void</code>
+  - [.getFileDetailsSync(projectFile, options)](#ResettableFile+getFileDetailsSync) ⇒ <code>FileDetail</code>
+  - [.getFileHashSync(projectFile)](#ResettableFile+getFileHashSync) ⇒ <code>string</code>
+  - [.getDataObjectSync(projectFile, [options])](#ResettableFile+getDataObjectSync) ⇒ [<code>DataObject</code>](#DataObject)
+  - [.createSymLinkSync(targetFile, projectFile, [options])](#ResettableFile+createSymLinkSync) ⇒ <code>void</code>
+  - [.readFileSync(projectFile, [options])](#ResettableFile+readFileSync) ⇒ <code>\*</code>
+  - [.readFileDetailedSync(projectFile, [options])](#ResettableFile+readFileDetailedSync) ⇒ <code>Object</code>
+  - [.writeFileSync(projectFile, data, [options])](#ResettableFile+writeFileSync) ⇒ <code>void</code>
+  - [.deleteFileSync(projectFile, [options])](#ResettableFile+deleteFileSync) ⇒ <code>void</code>
+  - [.copyFileSync(sourceFile, projectFile, [options])](#ResettableFile+copyFileSync) ⇒ <code>void</code>
+  - [.createDirSync(projectDir, [options])](#ResettableFile+createDirSync) ⇒ <code>void</code>
+  - [.deleteDirSync(projectDir, [options])](#ResettableFile+deleteDirSync) ⇒ <code>void</code>
 
 <a name="new_Project_new"></a>
 
@@ -669,7 +668,7 @@ const bin = project.moduleBin; // "my-scripts"
 **Returns**: <code>string</code> - <ul>
 
 <li>Root path of given module.</li>
-</ul>  
+</ul>
 
 | Param | Type                | Description                                    |
 | ----- | ------------------- | ---------------------------------------------- |
@@ -691,7 +690,7 @@ project.resolveModule("fs-extra"); // /path/to/project-module/node_modules/fs-ex
 **Returns**: <code>string</code> - <ul>
 
 <li>Path of the executable in <code>node_modules/.bim</code></li>
-</ul>  
+</ul>
 
 | Param      | Type                | Description                   |
 | ---------- | ------------------- | ----------------------------- |
@@ -707,7 +706,7 @@ project.resolveModule("fs-extra"); // /path/to/project-module/node_modules/fs-ex
 **Returns**: <code>string</code> \| <code>undefined</code> - <ul>
 
 <li>Path to parent module's binary.</li>
-</ul>  
+</ul>
 
 | Param        | Type                | Default                                | Description                      |
 | ------------ | ------------------- | -------------------------------------- | -------------------------------- |
@@ -743,7 +742,7 @@ module name is used by default.</li>
 </ul>  
 **Throws**:
 
-* <code>VError</code> <ul>
+- <code>VError</code> <ul>
   <li>Throws error no binary cannot be found.</li>
   </ul>
 
@@ -772,7 +771,7 @@ project.resolveBin("some-cmd"); // Searches "some-cmd" module and
 **Returns**: <code>string</code> - <ul>
 
 <li>Full path to module file.</li>
-</ul>  
+</ul>
 
 | Param   | Type                | Description                                            |
 | ------- | ------------------- | ------------------------------------------------------ |
@@ -788,7 +787,7 @@ project.resolveBin("some-cmd"); // Searches "some-cmd" module and
 **Returns**: <code>string</code> - <ul>
 
 <li>Path in config directory.</li>
-</ul>  
+</ul>
 
 | Param   | Type                | Description                         |
 | ------- | ------------------- | ----------------------------------- |
@@ -804,7 +803,7 @@ project.resolveBin("some-cmd"); // Searches "some-cmd" module and
 **Returns**: <code>string</code> - <ul>
 
 <li>Path in config directory.</li>
-</ul>  
+</ul>
 
 | Param   | Type                | Description                          |
 | ------- | ------------------- | ------------------------------------ |
@@ -820,7 +819,7 @@ project.resolveBin("some-cmd"); // Searches "some-cmd" module and
 **Returns**: <code>\*</code> - <ul>
 
 <li><code>t</code> or <code>f</code> value based on existence of dependency in package.json.</li>
-</ul>  
+</ul>
 
 | Param | Type                                                     | Default            | Description                                            |
 | ----- | -------------------------------------------------------- | ------------------ | ------------------------------------------------------ |
@@ -838,7 +837,7 @@ project.resolveBin("some-cmd"); // Searches "some-cmd" module and
 **Returns**: <code>boolean</code> - <ul>
 
 <li>Whether given environment variable is set and not empty.</li>
-</ul>  
+</ul>
 
 | Param | Type                | Description                                          |
 | ----- | ------------------- | ---------------------------------------------------- |
@@ -854,7 +853,7 @@ project.resolveBin("some-cmd"); // Searches "some-cmd" module and
 **Returns**: <code>\*</code> - <ul>
 
 <li>Environment variable or default value.</li>
-</ul>  
+</ul>
 
 | Param        | Type                | Description                                                                   |
 | ------------ | ------------------- | ----------------------------------------------------------------------------- |
@@ -875,7 +874,7 @@ also exist from process with success (0) or failure code (1).</p>
 </ul>  
 **Throws**:
 
-* <code>VError</code> <ul>
+- <code>VError</code> <ul>
   <li>Throws error if script throws error.</li>
   </ul>
 
@@ -910,7 +909,7 @@ project.executeFromCLI();
 </ul>  
 **Throws**:
 
-* <code>VError</code> <ul>
+- <code>VError</code> <ul>
   <li>Throws if given file does not export a function in script property.</li>
   </ul>
 
@@ -940,7 +939,7 @@ const result = executeScriptFileSync("build"); // Executes my-scripts/lib/script
 **Returns**: <code>string</code> \| <code>undefined</code> - <ul>
 
 <li>Full path (with extension if it has one). Undefined if not found.</li>
-</ul>  
+</ul>
 
 | Param      | Type                | Description                            |
 | ---------- | ------------------- | -------------------------------------- |
@@ -960,7 +959,7 @@ and returns result of <code>concurrently</code>.</p>
 **Returns**: [<code>ScriptResult</code>](#ScriptResult) - <ul>
 
 <li>Result of the executable.</li>
-</ul>  
+</ul>
 
 | Param          | Type                                   | Description                       |
 | -------------- | -------------------------------------- | --------------------------------- |
@@ -997,7 +996,7 @@ const result = project.executeSync(
 
 <li>Result of the executable.</li>
 </ul>  
-**See**: Project.executeSync()  
+**See**: Project.executeSync()
 
 | Param          | Type                                   | Description                       |
 | -------------- | -------------------------------------- | --------------------------------- |
@@ -1013,7 +1012,7 @@ const result = project.executeSync(
 **Returns**: <code>Array.&lt;string&gt;</code> - <ul>
 
 <li>Arguments to use with concurrently.</li>
-</ul>  
+</ul>
 
 | Param        | Type                                       | Default           | Description                                                  |
 | ------------ | ------------------------------------------ | ----------------- | ------------------------------------------------------------ |
@@ -1031,7 +1030,7 @@ const result = project.executeSync(
 **Returns**: <code>\*</code> - <ul>
 
 <li><code>t</code> or <code>f</code> value based on existence of sub property.</li>
-</ul>  
+</ul>
 
 | Param | Type                | Default            | Description                                    |
 | ----- | ------------------- | ------------------ | ---------------------------------------------- |
@@ -1049,7 +1048,7 @@ const result = project.executeSync(
 **Returns**: <code>\*</code> - <ul>
 
 <li><code>t</code> or <code>f</code> value based on existence of sub property.</li>
-</ul>  
+</ul>
 
 | Param | Type                | Default            | Description                                   |
 | ----- | ------------------- | ------------------ | --------------------------------------------- |
@@ -1067,7 +1066,7 @@ const result = project.executeSync(
 **Returns**: <code>string</code> - <ul>
 
 <li>Path in root.</li>
-</ul>  
+</ul>
 
 | Param   | Type                | Description                                         |
 | ------- | ------------------- | --------------------------------------------------- |
@@ -1090,7 +1089,7 @@ resettable.fromRoot("path/to/file.txt"); // dir/path/to/file.txt
 **Returns**: <code>string</code> - <ul>
 
 <li>Path in root.</li>
-</ul>  
+</ul>
 
 | Param   | Type                | Description                                         |
 | ------- | ------------------- | --------------------------------------------------- |
@@ -1113,7 +1112,7 @@ resettable.fromSourceRoot("path/to/file.txt"); // sourcedir/path/to/file.txt
 **Returns**: <code>boolean</code> - <ul>
 
 <li>Whether given file is a tracked data file.</li>
-</ul>  
+</ul>
 
 | Param       | Type                | Description          |
 | ----------- | ------------------- | -------------------- |
@@ -1130,7 +1129,7 @@ Returns true for broken links. (Links which points to non-existing paths, which 
 **Returns**: <code>\*</code> - <ul>
 
 <li><code>t</code> or <code>f</code> value based on existence of files in root.</li>
-</ul>  
+</ul>
 
 | Param        | Type                                                     | Default            | Description                                                 |
 | ------------ | -------------------------------------------------------- | ------------------ | ----------------------------------------------------------- |
@@ -1148,7 +1147,7 @@ Returns true for broken links. (Links which points to non-existing paths, which 
 **Returns**: <code>boolena</code> - <ul>
 
 <li>Whether given project file is a broken link.</li>
-</ul>  
+</ul>
 
 | Param       | Type                | Description                   |
 | ----------- | ------------------- | ----------------------------- |
@@ -1163,7 +1162,7 @@ Returns true for broken links. (Links which points to non-existing paths, which 
 **Kind**: instance method of [<code>Project</code>](#Project)  
 **Throws**:
 
-* <code>VError</code> <ul>
+- <code>VError</code> <ul>
   <li>Throws error if files cannot be written</li>
   </ul>
 
@@ -1177,7 +1176,7 @@ WARNING: Does not recreate deleted files.</p>
 **Kind**: instance method of [<code>Project</code>](#Project)  
 **Throws**:
 
-* <code>VError</code> <ul>
+- <code>VError</code> <ul>
   <li>Throws error if files cannot be written</li>
   </ul>
 
@@ -1190,7 +1189,7 @@ WARNING: Does not recreate deleted files.</p>
 **Kind**: instance method of [<code>Project</code>](#Project)  
 **Throws**:
 
-* <code>VError</code> <ul>
+- <code>VError</code> <ul>
   <li>Throws error if file cannot be reset.</li>
   </ul>
 
@@ -1211,7 +1210,7 @@ WARNING: Does not recreate deleted files.</p>
 </ul>  
 **Throws**:
 
-* <code>VError</code> <ul>
+- <code>VError</code> <ul>
   <li>Throws error if file details cannot be get.</li>
   </ul>
 
@@ -1233,7 +1232,7 @@ same hash for same data even they are formatted differently.</p>
 **Returns**: <code>string</code> - <ul>
 
 <li>Calculated hash for file.</li>
-</ul>  
+</ul>
 
 | Param       | Type                | Description                                                          |
 | ----------- | ------------------- | -------------------------------------------------------------------- |
@@ -1253,7 +1252,7 @@ Changes made are saved to same file when project is saved via <code>save()</code
 </ul>  
 **Throws**:
 
-* <code>VError</code> <ul>
+- <code>VError</code> <ul>
   <li>Throws error if file cannot be created.</li>
   </ul>
 
@@ -1279,7 +1278,7 @@ Changes made are saved to same file when project is saved via <code>save()</code
 **Kind**: instance method of [<code>Project</code>](#Project)  
 **Throws**:
 
-* <code>VError</code> <ul>
+- <code>VError</code> <ul>
   <li>Throws error if symbolic link cannot be created.</li>
   </ul>
 
@@ -1311,7 +1310,7 @@ createSymLink(here("../../config.json"), "tsconfig.json");
 </ul>  
 **Throws**:
 
-* <code>VError</code> <ul>
+- <code>VError</code> <ul>
   <li>Throws error if file cannot be found.</li>
   </ul>
 
@@ -1342,7 +1341,7 @@ createSymLink(here("../../config.json"), "tsconfig.json");
 </ul>  
 **Throws**:
 
-* <code>VError</code> <ul>
+- <code>VError</code> <ul>
   <li>Throws error if file cannot be found.</li>
   </ul>
 
@@ -1369,7 +1368,7 @@ createSymLink(here("../../config.json"), "tsconfig.json");
 **Kind**: instance method of [<code>Project</code>](#Project)  
 **Throws**:
 
-* <code>VError</code> <ul>
+- <code>VError</code> <ul>
   <li>Throws error if file cannot be created</li>
   </ul>
 
@@ -1399,7 +1398,7 @@ project.writeFile("./some-config.json", '{"name": "my-project"}'); // Writes giv
 **Kind**: instance method of [<code>Project</code>](#Project)  
 **Throws**:
 
-* <code>VError</code> <ul>
+- <code>VError</code> <ul>
   <li>Throws error if file cannot be deleted.</li>
   </ul>
 
@@ -1427,7 +1426,7 @@ project.copy("./some-config.json", "./some-config.json"); // Copies some-config.
 **Kind**: instance method of [<code>Project</code>](#Project)  
 **Throws**:
 
-* <code>VError</code> <ul>
+- <code>VError</code> <ul>
   <li>Throws error if file cannot be created</li>
   </ul>
 
@@ -1454,7 +1453,7 @@ project.copy("./some-config.json", "./some-config.json"); // Copies some-config.
 **Kind**: instance method of [<code>Project</code>](#Project)  
 **Throws**:
 
-* <code>VError</code> <ul>
+- <code>VError</code> <ul>
   <li>Throws error if directory tree cannot be created.</li>
   </ul>
 
@@ -1480,7 +1479,7 @@ project.createDir("path/to/dir"); // Created "path", "to" and "dir" as necessary
 **Kind**: instance method of [<code>Project</code>](#Project)  
 **Throws**:
 
-* <code>VError</code> <ul>
+- <code>VError</code> <ul>
   <li>Throws error if directory or its content cannot be deleted.</li>
   </ul>
 
@@ -1501,19 +1500,19 @@ project.createDir("path/to/dir"); // Created "path", "to" and "dir" as necessary
 
 **Kind**: global class
 
-* [DataObject](#DataObject)
-  * [new DataObject([data], [options])](#new_DataObject_new)
-  * [.isChanged](#DataObject+isChanged) : <code>boolean</code>
-  * [.data](#DataObject+data) : <code>Data</code>
-  * [.original](#DataObject+original) : <code>Data</code>
-  * [.snapshot](#DataObject+snapshot) : <code>Data</code>
-  * [.has(props, [t], [f])](#DataObject+has) ⇒ <code>\*</code>
-  * [.hasSubProp(prop, subProps, [t], [f])](#DataObject+hasSubProp) ⇒ <code>\*</code>
-  * [.get(path)](#DataObject+get) ⇒ <code>\*</code>
-  * [.set(path, value, [options])](#DataObject+set) ⇒ <code>this</code>
-  * [.setObject(data, [options])](#DataObject+setObject) ⇒ <code>this</code>
-  * [.remove(path, [options])](#DataObject+remove) ⇒ <code>this</code>
-  * [.reset()](#DataObject+reset) ⇒ <code>Array.&lt;Operation&gt;</code>
+- [DataObject](#DataObject)
+  - [new DataObject([data], [options])](#new_DataObject_new)
+  - [.isChanged](#DataObject+isChanged) : <code>boolean</code>
+  - [.data](#DataObject+data) : <code>Data</code>
+  - [.original](#DataObject+original) : <code>Data</code>
+  - [.snapshot](#DataObject+snapshot) : <code>Data</code>
+  - [.has(props, [t], [f])](#DataObject+has) ⇒ <code>\*</code>
+  - [.hasSubProp(prop, subProps, [t], [f])](#DataObject+hasSubProp) ⇒ <code>\*</code>
+  - [.get(path)](#DataObject+get) ⇒ <code>\*</code>
+  - [.set(path, value, [options])](#DataObject+set) ⇒ <code>this</code>
+  - [.setObject(data, [options])](#DataObject+setObject) ⇒ <code>this</code>
+  - [.remove(path, [options])](#DataObject+remove) ⇒ <code>this</code>
+  - [.reset()](#DataObject+reset) ⇒ <code>Array.&lt;Operation&gt;</code>
 
 <a name="new_DataObject_new"></a>
 
@@ -1575,7 +1574,7 @@ Property names may be given as chained such as <code>key</code> or <code>key.sub
 **Returns**: <code>\*</code> - <ul>
 
 <li><code>t</code> or <code>f</code> value based on existence of property.</li>
-</ul>  
+</ul>
 
 | Param | Type                                                   | Default            | Description                                                         |
 | ----- | ------------------------------------------------------ | ------------------ | ------------------------------------------------------------------- |
@@ -1600,7 +1599,7 @@ Property names may be given as chained such as <code>key</code> or <code>key.sub
 **Returns**: <code>\*</code> - <ul>
 
 <li><code>t</code> or <code>f</code> value based on existence of sub property.</li>
-</ul>  
+</ul>
 
 | Param    | Type                                                   | Default            | Description                                              |
 | -------- | ------------------------------------------------------ | ------------------ | -------------------------------------------------------- |
@@ -1626,7 +1625,7 @@ const result2 = project.hasSubProp("address.home", ["street.name", "street.no"])
 **Returns**: <code>\*</code> - <ul>
 
 <li>Data stored at given key.</li>
-</ul>  
+</ul>
 
 | Param | Type              | Description                  |
 | ----- | ----------------- | ---------------------------- |
@@ -1643,7 +1642,7 @@ Path may be given as chained. (i.e &quot;scripts.compile&quot;)</p>
 **Returns**: <code>this</code> - <ul>
 
 <li>Object instance.</li>
-</ul>  
+</ul>
 
 | Param           | Type                 | Default            | Description                                                            |
 | --------------- | -------------------- | ------------------ | ---------------------------------------------------------------------- |
@@ -1662,7 +1661,7 @@ Path may be given as chained. (i.e &quot;scripts.compile&quot;)</p>
 **Returns**: <code>this</code> - <ul>
 
 <li>Object instance.</li>
-</ul>  
+</ul>
 
 | Param           | Type                 | Default            | Description                                                            |
 | --------------- | -------------------- | ------------------ | ---------------------------------------------------------------------- |
@@ -1687,7 +1686,7 @@ Path may be given as chained. (i.e &quot;scripts.compile&quot;)</p>
 **Returns**: <code>this</code> - <ul>
 
 <li>Object instance.</li>
-</ul>  
+</ul>
 
 | Param           | Type                                                   | Default            | Description                                                            |
 | --------------- | ------------------------------------------------------ | ------------------ | ---------------------------------------------------------------------- |
@@ -1716,7 +1715,7 @@ Path may be given as chained. (i.e &quot;scripts.compile&quot;)</p>
 **Returns**: <code>Array</code> - <ul>
 
 <li>Index number of parameter whose name found in arguments.ü</li>
-</ul>  
+</ul>
 
 | Param   | Type                                                     | Description                                      |
 | ------- | -------------------------------------------------------- | ------------------------------------------------ |
