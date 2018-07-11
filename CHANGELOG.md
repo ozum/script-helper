@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="0.8.9"></a>
+
+## [0.8.9](https://github.com/ozum/script-helper/compare/v0.8.8...v0.8.9) (2018-07-11)
+
 <a name="0.8.8"></a>
 
 ## [0.8.8](https://github.com/ozum/script-helper/compare/v0.8.7...v0.8.8) (2018-07-11)

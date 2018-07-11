@@ -1,6 +1,6 @@
 {
   "name": "script-helper",
-  "version": "0.8.8",
+  "version": "0.8.9",
   "description": "Helper for creating and maintaining boilerplates, configurations and script modules for npm projects",
   "keywords": [
     "boilerplate",
