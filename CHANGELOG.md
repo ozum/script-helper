@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="0.8.6"></a>
+
+## [0.8.6](https://github.com/ozum/script-helper/compare/v0.8.5...v0.8.6) (2018-07-11)
+
+### Bug Fixes
+
+- fix missing node_modules test directory in git ([7fd9f15](https://github.com/ozum/script-helper/commit/7fd9f15))
+
 <a name="0.8.5"></a>
 
 ## [0.8.5](https://github.com/ozum/script-helper/compare/v0.8.4...v0.8.5) (2018-05-11)
@@ -28,7 +36,7 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### Features
 
-* add Project.modulePackage and Project.moduleBin attributes ([28891f0](https://github.com/ozum/script-helper/commit/28891f0))
+- add Project.modulePackage and Project.moduleBin attributes ([28891f0](https://github.com/ozum/script-helper/commit/28891f0))
 
 <a name="0.7.0"></a>
 
@@ -36,7 +44,7 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### Features
 
-* allow non-exit scripts ([3149bcd](https://github.com/ozum/script-helper/commit/3149bcd))
+- allow non-exit scripts ([3149bcd](https://github.com/ozum/script-helper/commit/3149bcd))
 
 <a name="0.6.3"></a>
 
@@ -52,7 +60,7 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### Bug Fixes
 
-* fix getmModuleRoot() method ([5daea4a](https://github.com/ozum/script-helper/commit/5daea4a))
+- fix getmModuleRoot() method ([5daea4a](https://github.com/ozum/script-helper/commit/5daea4a))
 
 <a name="0.6.0"></a>
 
@@ -60,7 +68,7 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### Features
 
-* add safeName and safeModuleName methods ([c2485be](https://github.com/ozum/script-helper/commit/c2485be))
+- add safeName and safeModuleName methods ([c2485be](https://github.com/ozum/script-helper/commit/c2485be))
 
 <a name="0.5.4"></a>
 
@@ -68,7 +76,7 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### Reverts
 
-* do not replace user name from package name ([2af8390](https://github.com/ozum/script-helper/commit/2af8390))
+- do not replace user name from package name ([2af8390](https://github.com/ozum/script-helper/commit/2af8390))
 
 <a name="0.5.3"></a>
 
@@ -76,7 +84,7 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### Bug Fixes
 
-* fix [@user](https://github.com/user)/package-name type names ([ddfd13f](https://github.com/ozum/script-helper/commit/ddfd13f))
+- fix [@user](https://github.com/user)/package-name type names ([ddfd13f](https://github.com/ozum/script-helper/commit/ddfd13f))
 
 <a name="0.5.2"></a>
 
@@ -92,7 +100,7 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### Features
 
-* let Project.executeSync() handle null and undefined ([8eabcb9](https://github.com/ozum/script-helper/commit/8eabcb9))
+- let Project.executeSync() handle null and undefined ([8eabcb9](https://github.com/ozum/script-helper/commit/8eabcb9))
 
 <a name="0.4.1"></a>
 
@@ -104,7 +112,7 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### Features
 
-* add serial execution feature to Project.executeSync() method ([d935f90](https://github.com/ozum/script-helper/commit/d935f90))
+- add serial execution feature to Project.executeSync() method ([d935f90](https://github.com/ozum/script-helper/commit/d935f90))
 
 <a name="0.3.0"></a>
 
@@ -112,12 +120,12 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### Bug Fixes
 
-* fix doc ([58a6aa1](https://github.com/ozum/script-helper/commit/58a6aa1))
-* update moe-scripts ([4fcd9fc](https://github.com/ozum/script-helper/commit/4fcd9fc))
+- fix doc ([58a6aa1](https://github.com/ozum/script-helper/commit/58a6aa1))
+- update moe-scripts ([4fcd9fc](https://github.com/ozum/script-helper/commit/4fcd9fc))
 
 ### Features
 
-* add ScriptKit class ([2be0ad2](https://github.com/ozum/script-helper/commit/2be0ad2))
+- add ScriptKit class ([2be0ad2](https://github.com/ozum/script-helper/commit/2be0ad2))
 
 <a name="0.2.3"></a>
 
@@ -125,7 +133,7 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### Bug Fixes
 
-* fix getConcurrentlyArgs() method and tests ([2ccc947](https://github.com/ozum/script-helper/commit/2ccc947))
+- fix getConcurrentlyArgs() method and tests ([2ccc947](https://github.com/ozum/script-helper/commit/2ccc947))
 
 <a name="0.2.2"></a>
 
@@ -141,7 +149,7 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### Features
 
-* add getFromHereFunctions() function to util ([d15c3d2](https://github.com/ozum/script-helper/commit/d15c3d2))
+- add getFromHereFunctions() function to util ([d15c3d2](https://github.com/ozum/script-helper/commit/d15c3d2))
 
 <a name="0.1.0"></a>
 
@@ -149,7 +157,7 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### Features
 
-* initial version ([22ba0c8](https://github.com/ozum/script-helper/commit/22ba0c8))
+- initial version ([22ba0c8](https://github.com/ozum/script-helper/commit/22ba0c8))
 
 <!-- Titles: Added, Changed, Deprecated, Removed, Fixed, Security -->
 
@@ -161,4 +169,4 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 #### Added
 
-* Initial version
+- Initial version
